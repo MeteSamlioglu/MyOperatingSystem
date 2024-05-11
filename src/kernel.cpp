@@ -231,76 +231,76 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
-    printf("Hello World! --- http://www.AlgorithMan.de\n");
+    printf("Hello World2! --- http://www.AlgorithMan.de\n");
 
     GlobalDescriptorTable gdt;
     
     
-    uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
-    size_t heap = 10*1024*1024;
-    MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+    // uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
+    // size_t heap = 10*1024*1024;
+    // MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
     
-    printf("heap: 0x");
-    printfHex((heap >> 24) & 0xFF);
-    printfHex((heap >> 16) & 0xFF);
-    printfHex((heap >> 8 ) & 0xFF);
-    printfHex((heap      ) & 0xFF);
+    // printf("heap: 0x");
+    // printfHex((heap >> 24) & 0xFF);
+    // printfHex((heap >> 16) & 0xFF);
+    // printfHex((heap >> 8 ) & 0xFF);
+    // printfHex((heap      ) & 0xFF);
     
-    void* allocated = memoryManager.malloc(1024);
-    printf("\nallocated: 0x");
-    printfHex(((size_t)allocated >> 24) & 0xFF);
-    printfHex(((size_t)allocated >> 16) & 0xFF);
-    printfHex(((size_t)allocated >> 8 ) & 0xFF);
-    printfHex(((size_t)allocated      ) & 0xFF);
-    printf("\n");
+    // void* allocated = memoryManager.malloc(1024);
+    // printf("\nallocated: 0x");
+    // printfHex(((size_t)allocated >> 24) & 0xFF);
+    // printfHex(((size_t)allocated >> 16) & 0xFF);
+    // printfHex(((size_t)allocated >> 8 ) & 0xFF);
+    // printfHex(((size_t)allocated      ) & 0xFF);
+    // printf("\n");
     
-    TaskManager taskManager;
-    /*
-    Task task1(&gdt, taskA);
-    Task task2(&gdt, taskB);
-    taskManager.AddTask(&task1);
-    taskManager.AddTask(&task2);
-    */
+    // TaskManager taskManager;
+    // /*
+    // Task task1(&gdt, taskA);
+    // Task task2(&gdt, taskB);
+    // taskManager.AddTask(&task1);
+    // taskManager.AddTask(&task2);
+    // */
     
-    InterruptManager interrupts(0x20, &gdt, &taskManager);
-    SyscallHandler syscalls(&interrupts, 0x80);
+    // InterruptManager interrupts(0x20, &gdt, &taskManager);
+    // SyscallHandler syscalls(&interrupts, 0x80);
     
-    printf("Initializing Hardware, Stage 1\n");
+    // printf("Initializing Hardware, Stage 1\n");
     
-    #ifdef GRAPHICSMODE
-        Desktop desktop(320,200, 0x00,0x00,0xA8);
-    #endif
+    // #ifdef GRAPHICSMODE
+    //     Desktop desktop(320,200, 0x00,0x00,0xA8);
+    // #endif
     
-    DriverManager drvManager;
+    // DriverManager drvManager;
     
-        #ifdef GRAPHICSMODE
-            KeyboardDriver keyboard(&interrupts, &desktop);
-        #else
-            PrintfKeyboardEventHandler kbhandler;
-            KeyboardDriver keyboard(&interrupts, &kbhandler);
-        #endif
-        drvManager.AddDriver(&keyboard);
+    //     #ifdef GRAPHICSMODE
+    //         KeyboardDriver keyboard(&interrupts, &desktop);
+    //     #else
+    //         PrintfKeyboardEventHandler kbhandler;
+    //         KeyboardDriver keyboard(&interrupts, &kbhandler);
+    //     #endif
+    //     drvManager.AddDriver(&keyboard);
         
     
-        #ifdef GRAPHICSMODE
-            MouseDriver mouse(&interrupts, &desktop);
-        #else
-            MouseToConsole mousehandler;
-            MouseDriver mouse(&interrupts, &mousehandler);
-        #endif
-        drvManager.AddDriver(&mouse);
+    //     #ifdef GRAPHICSMODE
+    //         MouseDriver mouse(&interrupts, &desktop);
+    //     #else
+    //         MouseToConsole mousehandler;
+    //         MouseDriver mouse(&interrupts, &mousehandler);
+    //     #endif
+    //     drvManager.AddDriver(&mouse);
         
-        PeripheralComponentInterconnectController PCIController;
-        PCIController.SelectDrivers(&drvManager, &interrupts);
+    //     PeripheralComponentInterconnectController PCIController;
+    //     PCIController.SelectDrivers(&drvManager, &interrupts);
 
-        #ifdef GRAPHICSMODE
-            VideoGraphicsArray vga;
-        #endif
+    //     #ifdef GRAPHICSMODE
+    //         VideoGraphicsArray vga;
+    //     #endif
         
-    printf("Initializing Hardware, Stage 2\n");
-        drvManager.ActivateAll();
+    // printf("Initializing Hardware, Stage 2\n");
+    //     drvManager.ActivateAll();
         
-    printf("Initializing Hardware, Stage 3\n");
+    // printf("Initializing Hardware, Stage 3\n");
 
     #ifdef GRAPHICSMODE
         vga.SetMode(320,200,8);
@@ -338,49 +338,49 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
                  
 
                    
-    amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+    // amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
 
     
-    // IP Address
-    uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
-    uint32_t ip_be = ((uint32_t)ip4 << 24)
-                | ((uint32_t)ip3 << 16)
-                | ((uint32_t)ip2 << 8)
-                | (uint32_t)ip1;
-    eth0->SetIPAddress(ip_be);
-    EtherFrameProvider etherframe(eth0);
-    AddressResolutionProtocol arp(&etherframe);    
+    // // IP Address
+    // uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
+    // uint32_t ip_be = ((uint32_t)ip4 << 24)
+    //             | ((uint32_t)ip3 << 16)
+    //             | ((uint32_t)ip2 << 8)
+    //             | (uint32_t)ip1;
+    // eth0->SetIPAddress(ip_be);
+    // EtherFrameProvider etherframe(eth0);
+    // AddressResolutionProtocol arp(&etherframe);    
 
     
-    // IP Address of the default gateway
-    uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2;
-    uint32_t gip_be = ((uint32_t)gip4 << 24)
-                   | ((uint32_t)gip3 << 16)
-                   | ((uint32_t)gip2 << 8)
-                   | (uint32_t)gip1;
+    // // IP Address of the default gateway
+    // uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2;
+    // uint32_t gip_be = ((uint32_t)gip4 << 24)
+    //                | ((uint32_t)gip3 << 16)
+    //                | ((uint32_t)gip2 << 8)
+    //                | (uint32_t)gip1;
     
-    uint8_t subnet1 = 255, subnet2 = 255, subnet3 = 255, subnet4 = 0;
-    uint32_t subnet_be = ((uint32_t)subnet4 << 24)
-                   | ((uint32_t)subnet3 << 16)
-                   | ((uint32_t)subnet2 << 8)
-                   | (uint32_t)subnet1;
+    // uint8_t subnet1 = 255, subnet2 = 255, subnet3 = 255, subnet4 = 0;
+    // uint32_t subnet_be = ((uint32_t)subnet4 << 24)
+    //                | ((uint32_t)subnet3 << 16)
+    //                | ((uint32_t)subnet2 << 8)
+    //                | (uint32_t)subnet1;
                    
-    InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnet_be);
-    InternetControlMessageProtocol icmp(&ipv4);
-    UserDatagramProtocolProvider udp(&ipv4);
-    TransmissionControlProtocolProvider tcp(&ipv4);
+    // InternetProtocolProvider ipv4(&etherframe, &arp, gip_be, subnet_be);
+    // InternetControlMessageProtocol icmp(&ipv4);
+    // UserDatagramProtocolProvider udp(&ipv4);
+    // TransmissionControlProtocolProvider tcp(&ipv4);
     
     
-    interrupts.Activate();
+    // interrupts.Activate();
 
-    printf("\n\n\n\n");
+    // printf("\n\n\n\n");
     
-    arp.BroadcastMACAddress(gip_be);
+    // arp.BroadcastMACAddress(gip_be);
     
     
-    PrintfTCPHandler tcphandler;
-    TransmissionControlProtocolSocket* tcpsocket = tcp.Listen(1234);
-    tcp.Bind(tcpsocket, &tcphandler);
+    // PrintfTCPHandler tcphandler;
+    // TransmissionControlProtocolSocket* tcpsocket = tcp.Listen(1234);
+    // tcp.Bind(tcpsocket, &tcphandler);
     //tcpsocket->Send((uint8_t*)"Hello TCP!", 10);
 
     
