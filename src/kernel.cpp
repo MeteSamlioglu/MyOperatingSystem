@@ -231,7 +231,7 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
-    printf("Hello World2! --- http://www.AlgorithMan.de\n");
+    printf("Hello World! --- http://www.AlgorithMan.de\n");
 
     GlobalDescriptorTable gdt;
     

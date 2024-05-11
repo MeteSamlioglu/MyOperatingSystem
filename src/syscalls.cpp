@@ -27,7 +27,8 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         case 4:
             printf((char*)cpu->ebx);
             break;
-            
+        //case 5: //Reserverd for fork    
+        
         default:
             break;
     }
