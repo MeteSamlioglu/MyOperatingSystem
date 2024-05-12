@@ -67,16 +67,18 @@ int myos::getPid()
 
 /*
     Returns the pid of the newly created task
+    Assign eax = EXEC
+    Assign ecx = pid
+    Assign ebx = ptr
 */
-int myos::exec(void entrypoint())
+int myos::exec(void ptr())
 {
     int pid;
-    asm("int $0x80" : "=c" (pid) : "a" (SystemCalls::EXEC), "b" ((uint32_t)entrypoint));
+    
+    asm("int $0x80" : "=c" (pid) : "a" (SystemCalls::EXEC), "b" ((uint32_t)ptr));
+    
     return pid;
 }
-
-
-
 
 
 /*
@@ -112,6 +114,9 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         case SystemCalls::EXIT:
             if(InterruptHandler::system_exit())
                 return InterruptHandler::HandleInterrupt(esp);
+            break;
+        case SystemCalls::EXEC:
+            esp = InterruptHandler::system_execute(cpu->ebx);
             break;
 
         default:

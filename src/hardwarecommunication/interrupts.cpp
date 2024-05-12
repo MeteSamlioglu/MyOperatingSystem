@@ -217,7 +217,12 @@ common::uint32_t InterruptHandler::system_exit()
 
 }
 
+common::uint32_t InterruptHandler::system_execute(common::uint32_t ptr)
+{
+    
+    return interruptManager->taskManager->exec((void (*)())ptr);
 
+}
 
 
 

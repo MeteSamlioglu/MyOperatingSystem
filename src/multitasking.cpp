@@ -145,9 +145,9 @@ bool TaskManager::AddTask(Task* task)
     numTasks++;    
     return true;
 }
-common::uint32_t TaskManager::exec(void entrypoint())
+common::uint32_t TaskManager::exec(void ptr())
 {
-    if(currentTask > -1)
+    if(currentTask == -1)
         return -1;
     
     tasks[currentTask].task_state=READY;
@@ -160,7 +160,7 @@ common::uint32_t TaskManager::exec(void entrypoint())
     tasks[currentTask].cpustate -> esi = 0;
     tasks[currentTask].cpustate -> edi = 0;
     tasks[currentTask].cpustate -> ebp = 0;
-    tasks[currentTask].cpustate -> eip = (uint32_t)entrypoint;
+    tasks[currentTask].cpustate -> eip = (uint32_t)ptr;
     tasks[currentTask].cpustate -> cs = gdt->CodeSegmentSelector();
     tasks[currentTask].cpustate -> eflags = 0x202;
     

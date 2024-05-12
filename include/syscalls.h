@@ -20,7 +20,7 @@ namespace myos
 
     };
 
-    int exec(void entrypoint());
+    int exec(void ptr());
     int getPid();
     int addTask(void entrypoint());
     void fork();
