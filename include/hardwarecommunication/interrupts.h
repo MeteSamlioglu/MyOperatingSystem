@@ -26,7 +26,8 @@ namespace myos
             common::uint32_t syscall_getpid();
             common::uint32_t system_exit();
             common::uint32_t system_execute(common::uint32_t ptr);
-            
+            bool system_waitpid(common::uint32_t pid);
+
         public:
             virtual myos::common::uint32_t HandleInterrupt(myos::common::uint32_t esp);
         };

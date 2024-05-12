@@ -118,7 +118,10 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         case SystemCalls::EXEC:
             esp = InterruptHandler::system_execute(cpu->ebx);
             break;
-
+        case SystemCalls::WAITPID:
+            if(InterruptHandler::system_waitpid(esp))
+                return InterruptHandler::HandleInterrupt(esp); /* Schedule another process*/
+            
         default:
             break;
     }

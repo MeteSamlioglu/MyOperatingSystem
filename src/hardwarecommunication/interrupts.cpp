@@ -27,7 +27,8 @@ InterruptHandler::~InterruptHandler()
 
 uint32_t InterruptHandler::HandleInterrupt(uint32_t esp)
 {
-    return esp;
+    uint32_t esp_ = (uint32_t) interruptManager ->taskManager -> Schedule((CPUState*)esp);
+    return esp_;
 }
 
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
@@ -224,6 +225,13 @@ common::uint32_t InterruptHandler::system_execute(common::uint32_t ptr)
 
 }
 
+bool InterruptHandler::system_waitpid(common::uint32_t pid)
+{
+    
+    return interruptManager->taskManager->wait(pid);
+
+
+}
 
 
 
