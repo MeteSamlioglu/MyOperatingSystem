@@ -22,10 +22,13 @@ namespace myos
             InterruptManager* interruptManager;
             InterruptHandler(InterruptManager* interruptManager, myos::common::uint8_t InterruptNumber);
             ~InterruptHandler();
+            
             common::uint32_t syscall_addTask(common::uint32_t entrypoint); /*An interrupt for adding a new task to task manager*/
             common::uint32_t syscall_getpid();
             common::uint32_t system_exit();
             common::uint32_t system_execute(common::uint32_t ptr);
+            common::uint32_t system_fork(CPUState* cpustate);
+
             bool system_waitpid(common::uint32_t pid);
 
         public:

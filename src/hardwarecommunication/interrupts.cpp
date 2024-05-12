@@ -229,9 +229,13 @@ bool InterruptHandler::system_waitpid(common::uint32_t pid)
 {
     
     return interruptManager->taskManager->wait(pid);
-
-
 }
+
+common::uint32_t InterruptHandler::system_fork(CPUState* cpustate)
+{
+    return interruptManager->taskManager->fork(cpustate);
+}
+
 
 
 
