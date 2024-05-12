@@ -88,7 +88,7 @@ namespace myos
             void printTable();
             
             common::uint32_t AddTask(void entrypoint()); /* Add task by passing a function parameter*/
-            common::uint32_t getPid();  /* Returns the pid of the current task*/
+            common::uint32_t getTaskPid();  /* Returns the pid of the current task*/
             
             common::uint32_t fork(CPUState* cpustate);           
             

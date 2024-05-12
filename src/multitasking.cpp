@@ -167,10 +167,11 @@ common::uint32_t TaskManager::exec(void entrypoint())
     return (uint32_t)tasks[currentTask].cpustate;
 
 }
+/* Make the flag of the task finished, so its never going to be scheduled*/
+
 bool TaskManager::exit()
 {
     tasks[currentTask].task_state = FINISHED; /* Never schedule it again!*/
-    
     return true;
 }
 
@@ -201,7 +202,7 @@ common::uint32_t TaskManager::fork(CPUState* cpustate)
 /*
     Returns the pid of the current task.
 */
-common::uint32_t TaskManager::getPid()
+common::uint32_t TaskManager::getTaskPid()
 {
     return tasks[currentTask].pid;
 }

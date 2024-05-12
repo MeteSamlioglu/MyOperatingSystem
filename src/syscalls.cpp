@@ -22,11 +22,15 @@ SyscallHandler::~SyscallHandler()
 
 void printf(char*);
 
+
 void myos::waitpid(common::uint8_t wPid)
 {
     asm("int $0x80" : : "a" (SystemCalls::WAITPID),"b" (wPid));
 }
 
+/*
+    When an interrupt happened with number 0x80, assign SystemCalls:EXIT value to eax register
+*/
 void myos::sys_exit()
 {
     asm("int $0x80" : : "a" (SystemCalls::EXIT));
@@ -47,13 +51,32 @@ void myos::fork(int *pid)
     asm("int $0x80" :"=c" (*pid): "a" (SystemCalls::FORK));
 }
 
+/* 
+    
+    When syscall occurs the process is being interrupted. To perform this interruption we must write assembly
+
+*/
+int myos::getPid()
+{
+    int task_pid = -1; 
+    
+    asm("int $0x80" : "=c" (task_pid) : "a" (SystemCalls::GETPID)); // 0x80 -> interrupt interrupt number
+    
+    return task_pid;
+}
+
+/*
+    Returns the pid of the newly created task
+*/
 int myos::exec(void entrypoint())
 {
-    int result;
-    asm("int $0x80" : "=c" (result) : "a" (SystemCalls::EXEC), "b" ((uint32_t)entrypoint));
-    return result;
+    int pid;
+    asm("int $0x80" : "=c" (pid) : "a" (SystemCalls::EXEC), "b" ((uint32_t)entrypoint));
+    return pid;
 }
-//  b = ebx
+
+
+
 
 
 /*
@@ -79,11 +102,18 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         case SystemCalls::PRINTF:
             printf((char*)cpu->ebx);
             break;
+        
         case SystemCalls::ADDTASK:
             cpu->ecx = InterruptHandler::syscall_addTask(cpu->ebx);
-
-        //case 5: //Reserverd for fork    
         
+        case SystemCalls::GETPID:
+            cpu->ecx = InterruptHandler::syscall_getpid();
+            break;
+        case SystemCalls::EXIT:
+            if(InterruptHandler::system_exit())
+                return InterruptHandler::HandleInterrupt(esp);
+            break;
+
         default:
             break;
     }

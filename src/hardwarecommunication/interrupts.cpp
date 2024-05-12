@@ -202,6 +202,20 @@ common::uint32_t InterruptHandler::syscall_addTask(common::uint32_t entrypoint)
 
 }
 
+common::uint32_t InterruptHandler::syscall_getpid()
+{
+    
+    return interruptManager->taskManager->getTaskPid();
+
+}
+
+
+common::uint32_t InterruptHandler::system_exit()
+{
+    
+    return interruptManager->taskManager->exit();
+
+}
 
 
 

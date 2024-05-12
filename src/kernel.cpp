@@ -245,12 +245,12 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // void* allocated = memoryManager.malloc(1024);
 
     TaskManager taskManager;
-    /*
+
     Task task1(&gdt, taskA);
     Task task2(&gdt, taskB);
     taskManager.AddTask(&task1);
     taskManager.AddTask(&task2);
-    */
+    
     
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     SyscallHandler syscalls(&interrupts, 0x80);

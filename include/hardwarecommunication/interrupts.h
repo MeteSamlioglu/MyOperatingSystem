@@ -23,7 +23,8 @@ namespace myos
             InterruptHandler(InterruptManager* interruptManager, myos::common::uint8_t InterruptNumber);
             ~InterruptHandler();
             common::uint32_t syscall_addTask(common::uint32_t entrypoint); /*An interrupt for adding a new task to task manager*/
-
+            common::uint32_t syscall_getpid();
+            common::uint32_t system_exit();
         public:
             virtual myos::common::uint32_t HandleInterrupt(myos::common::uint32_t esp);
         };
