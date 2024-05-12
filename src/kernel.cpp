@@ -196,10 +196,10 @@ public:
 };
 
 
-void sysprintf(char* str)
-{
-    asm("int $0x80" : : "a" (4), "b" (str));
-}
+// void sysprintf(char* str)
+// {
+//     asm("int $0x80" : : "a" (4), "b" (str));
+// }
 
 void taskA()
 {
@@ -212,9 +212,6 @@ void taskB()
     while(true)
         sysprintf("B");
 }
-
-
-
 
 
 
@@ -232,40 +229,34 @@ extern "C" void callConstructors()
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
     printf("Hello World! --- http://www.AlgorithMan.de\n");
+    
+    printf("This is my operating System\n");
+
 
     GlobalDescriptorTable gdt;
     
+
+
     
     // uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     // size_t heap = 10*1024*1024;
+    
     // MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
-    
-    // printf("heap: 0x");
-    // printfHex((heap >> 24) & 0xFF);
-    // printfHex((heap >> 16) & 0xFF);
-    // printfHex((heap >> 8 ) & 0xFF);
-    // printfHex((heap      ) & 0xFF);
-    
     // void* allocated = memoryManager.malloc(1024);
-    // printf("\nallocated: 0x");
-    // printfHex(((size_t)allocated >> 24) & 0xFF);
-    // printfHex(((size_t)allocated >> 16) & 0xFF);
-    // printfHex(((size_t)allocated >> 8 ) & 0xFF);
-    // printfHex(((size_t)allocated      ) & 0xFF);
-    // printf("\n");
+
+    TaskManager taskManager;
+    /*
+    Task task1(&gdt, taskA);
+    Task task2(&gdt, taskB);
+    taskManager.AddTask(&task1);
+    taskManager.AddTask(&task2);
+    */
     
-    // TaskManager taskManager;
-    // /*
-    // Task task1(&gdt, taskA);
-    // Task task2(&gdt, taskB);
-    // taskManager.AddTask(&task1);
-    // taskManager.AddTask(&task2);
-    // */
+    InterruptManager interrupts(0x20, &gdt, &taskManager);
+    SyscallHandler syscalls(&interrupts, 0x80);
     
-    // InterruptManager interrupts(0x20, &gdt, &taskManager);
-    // SyscallHandler syscalls(&interrupts, 0x80);
-    
-    // printf("Initializing Hardware, Stage 1\n");
+    //printf("Initializing Hardware, Stage 1\n");
+
     
     // #ifdef GRAPHICSMODE
     //     Desktop desktop(320,200, 0x00,0x00,0xA8);
@@ -297,50 +288,45 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     //         VideoGraphicsArray vga;
     //     #endif
         
-    // printf("Initializing Hardware, Stage 2\n");
+    // //printf("Initializing Hardware, Stage 2\n");
     //     drvManager.ActivateAll();
         
-    // printf("Initializing Hardware, Stage 3\n");
+    // //printf("Initializing Hardware, Stage 3\n");
 
-    #ifdef GRAPHICSMODE
-        vga.SetMode(320,200,8);
-        Window win1(&desktop, 10,10,20,20, 0xA8,0x00,0x00);
-        desktop.AddChild(&win1);
-        Window win2(&desktop, 40,15,30,30, 0x00,0xA8,0x00);
-        desktop.AddChild(&win2);
-    #endif
+    // #ifdef GRAPHICSMODE
+    //     vga.SetMode(320,200,8);
+    //     Window win1(&desktop, 10,10,20,20, 0xA8,0x00,0x00);
+    //     desktop.AddChild(&win1);
+    //     Window win2(&desktop, 40,15,30,30, 0x00,0xA8,0x00);
+    //     desktop.AddChild(&win2);
+    // #endif
 
 
-    /*
-    printf("\nS-ATA primary master: ");
-    AdvancedTechnologyAttachment ata0m(true, 0x1F0);
-    ata0m.Identify();
     
-    printf("\nS-ATA primary slave: ");
-    AdvancedTechnologyAttachment ata0s(false, 0x1F0);
-    ata0s.Identify();
-    ata0s.Write28(0, (uint8_t*)"http://www.AlgorithMan.de", 25);
-    ata0s.Flush();
-    ata0s.Read28(0, 25);
+    //printf("\nS-ATA primary master: ");
+    // AdvancedTechnologyAttachment ata0m(true, 0x1F0);
+    // ata0m.Identify();
     
-    printf("\nS-ATA secondary master: ");
-    AdvancedTechnologyAttachment ata1m(true, 0x170);
-    ata1m.Identify();
+    // //printf("\nS-ATA primary slave: ");
+    // AdvancedTechnologyAttachment ata0s(false, 0x1F0);
+    // ata0s.Identify();
+    // ata0s.Write28(0, (uint8_t*)"http://www.AlgorithMan.de", 25);
+    // ata0s.Flush();
+    // ata0s.Read28(0, 25);
     
-    printf("\nS-ATA secondary slave: ");
-    AdvancedTechnologyAttachment ata1s(false, 0x170);
-    ata1s.Identify();
+    // //printf("\nS-ATA secondary master: ");
+    // AdvancedTechnologyAttachment ata1m(true, 0x170);
+    // ata1m.Identify();
+    
+    // //printf("\nS-ATA secondary slave: ");
+    // AdvancedTechnologyAttachment ata1s(false, 0x170);
+    // ata1s.Identify();
     // third: 0x1E8
-    // fourth: 0x168
-    */
-    
-
-                 
+    // fourth: 0x168             
 
                    
-    // amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+    //amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
 
-    
     // // IP Address
     // uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15;
     // uint32_t ip_be = ((uint32_t)ip4 << 24)
@@ -371,9 +357,9 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // TransmissionControlProtocolProvider tcp(&ipv4);
     
     
-    // interrupts.Activate();
+    interrupts.Activate();
 
-    // printf("\n\n\n\n");
+    //printf("\n\n\n\n");
     
     // arp.BroadcastMACAddress(gip_be);
     
@@ -381,18 +367,18 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // PrintfTCPHandler tcphandler;
     // TransmissionControlProtocolSocket* tcpsocket = tcp.Listen(1234);
     // tcp.Bind(tcpsocket, &tcphandler);
-    //tcpsocket->Send((uint8_t*)"Hello TCP!", 10);
+    // tcpsocket->Send((uint8_t*)"Hello TCP!", 10);
 
     
-    //icmp.RequestEchoReply(gip_be);
+    // icmp.RequestEchoReply(gip_be);
     
-    //PrintfUDPHandler udphandler;
-    //UserDatagramProtocolSocket* udpsocket = udp.Connect(gip_be, 1234);
-    //udp.Bind(udpsocket, &udphandler);
-    //udpsocket->Send((uint8_t*)"Hello UDP!", 10);
+    // PrintfUDPHandler udphandler;
+    // UserDatagramProtocolSocket* udpsocket = udp.Connect(gip_be, 1234);
+    // udp.Bind(udpsocket, &udphandler);
+    // udpsocket->Send((uint8_t*)"Hello UDP!", 10);
     
-    //UserDatagramProtocolSocket* udpsocket = udp.Listen(1234);
-    //udp.Bind(udpsocket, &udphandler);
+    // UserDatagramProtocolSocket* udpsocket = udp.Listen(1234);
+    // udp.Bind(udpsocket, &udphandler);
 
     
     while(1)

@@ -93,22 +93,22 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* dri
                     driverManager->AddDriver(driver);
 
                 
-                printf("PCI BUS ");
+                //printf("PCI BUS ");
                 printfHex(bus & 0xFF);
                 
-                printf(", DEVICE ");
+                //printf(", DEVICE ");
                 printfHex(device & 0xFF);
 
-                printf(", FUNCTION ");
+                //printf(", FUNCTION ");
                 printfHex(function & 0xFF);
                 
-                printf(" = VENDOR ");
+                //printf(" = VENDOR ");
                 printfHex((dev.vendor_id & 0xFF00) >> 8);
                 printfHex(dev.vendor_id & 0xFF);
-                printf(", DEVICE ");
+                //printf(", DEVICE ");
                 printfHex((dev.device_id & 0xFF00) >> 8);
                 printfHex(dev.device_id & 0xFF);
-                printf("\n");
+                //printf("\n");
             }
         }
     }
@@ -188,7 +188,7 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
             switch(dev.subclass_id)
             {
                 case 0x00: // VGA
-                    printf("VGA ");
+                    //printf("VGA ");
                     break;
             }
             break;
