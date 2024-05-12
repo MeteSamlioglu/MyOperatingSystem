@@ -54,6 +54,12 @@ int myos::exec(void entrypoint())
     return result;
 }
 //  b = ebx
+
+
+/*
+ecx registerini result'a yaz, SystemCalls::ADDTASK değerini eax'e yaz, ebx'i entrypointe yaz. 
+*/
+
 int myos::addTask(void entrypoint())
 {
     int result;
@@ -73,6 +79,9 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
         case SystemCalls::PRINTF:
             printf((char*)cpu->ebx);
             break;
+        case SystemCalls::ADDTASK:
+            cpu->ecx = InterruptHandler::syscall_addTask(cpu->ebx);
+
         //case 5: //Reserverd for fork    
         
         default:
