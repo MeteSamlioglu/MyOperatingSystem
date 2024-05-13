@@ -57,7 +57,7 @@ namespace myos
         static common::uint32_t pid_counter;
 
     public:
-        Task(GlobalDescriptorTable *gdt, void entrypoint());
+        Task(GlobalDescriptorTable *gdt, void ptr());
         Task();
         ~Task();
         
@@ -87,12 +87,12 @@ namespace myos
             bool wait(common::uint32_t pid); /* wait pid basically*/
             void printTable();
             
-            common::uint32_t AddTask(void entrypoint()); /* Add task by passing a function parameter*/
+            common::uint32_t AddTask(void ptr()); /* Add task by passing a function parameter*/
             common::uint32_t getTaskPid();  /* Returns the pid of the current task*/
             
             common::uint32_t fork(CPUState* cpustate);           
             
-            common::uint32_t exec(void entrypoint());
+            common::uint32_t exec(void ptr());
             int getIndex(common::uint32_t pid);
     };
     

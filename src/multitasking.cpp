@@ -12,7 +12,7 @@ void printf(char* str);
 void printNum(int num);
 
 
-Task::Task(GlobalDescriptorTable *gdt, void entrypoint())
+Task::Task(GlobalDescriptorTable *gdt, void ptr())
 {
     cpustate = (CPUState*)(stack + 4096 - sizeof(CPUState));
     
@@ -35,11 +35,14 @@ Task::Task(GlobalDescriptorTable *gdt, void entrypoint())
     // cpustate -> error = 0;    
    
     // cpustate -> esp = ;
-    cpustate -> eip = (uint32_t)entrypoint;
+    cpustate -> eip = (uint32_t)ptr;
     cpustate -> cs = gdt->CodeSegmentSelector();
     // cpustate -> ss = ;
     cpustate -> eflags = 0x202;
     
+    wait_pid = 0;
+    parent_pid = 0;
+    pid = pid_counter++;
 }
 
 Task::~Task()
@@ -96,7 +99,7 @@ TaskManager::TaskManager(GlobalDescriptorTable *gdt_)
     currentTask = -1;
     gdt=gdt_;
 }
-common::uint32_t TaskManager::AddTask(void entrypoint())
+common::uint32_t TaskManager::AddTask(void ptr())
 {
     tasks[numTasks].task_state=READY;
     tasks[numTasks].pid=Task::pid_counter++;
@@ -111,7 +114,7 @@ common::uint32_t TaskManager::AddTask(void entrypoint())
     tasks[numTasks].cpustate -> edi = 0;
     tasks[numTasks].cpustate -> ebp = 0;
     
-    tasks[numTasks].cpustate -> eip = (uint32_t)entrypoint;
+    tasks[numTasks].cpustate -> eip = (uint32_t)ptr;
     tasks[numTasks].cpustate -> cs = gdt->CodeSegmentSelector();
     
     tasks[numTasks].cpustate -> eflags = 0x202;

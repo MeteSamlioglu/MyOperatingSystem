@@ -34,6 +34,39 @@ using namespace myos::gui;
 using namespace myos::net;
 
 
+void sleep(uint32_t milliseconds) {
+    for (uint32_t i = 0; i < milliseconds; i++) {
+        for (uint32_t j = 0; j < 400000; j++) {
+            asm volatile("nop");
+        }
+    }
+}
+
+char* itoa(int value, char* result, int base) {
+    // check that the base if valid
+    if (base < 2 || base > 36) { *result = '\0'; return result; }
+
+    char* ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
+
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
+    } while ( value );
+
+
+    if (tmp_value < 0) *ptr++ = '-';
+    *ptr-- = '\0';
+    while(ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr--= *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return result;
+}
+
+
 
 void printf(char* str)
 {
@@ -72,6 +105,14 @@ void printf(char* str)
     }
 }
 
+void printNumber(int number){
+    char str[12];
+
+    itoa(number,str,12);
+    
+    printf(str);
+}
+
 void printfHex(uint8_t key)
 {
     char* foo = "00";
@@ -93,8 +134,29 @@ void printfHex32(uint32_t key)
     printfHex( key & 0xFF);
 }
 
+void forkTestExample()
+{
+    int parentPid=getPid();
+    printf("taskC Pid:");
+    printNumber(parentPid);
+    printf("\n");
+    int childPid=0;
+    fork(&childPid);
+    if(childPid==0){
+        printf("Child Task ");
+        printNumber(childPid);
+        printf("\n");
+    }else{
+        printf("Parent Task ");
+        printNumber(getPid());
+        printf("\n");
+    }
 
-
+    printf("taskC End Pid:");
+    printNumber(getPid());
+    printf("\n");
+    sys_exit();
+}
 
 
 class PrintfKeyboardEventHandler : public KeyboardEventHandler
@@ -213,6 +275,33 @@ void taskB()
         sysprintf("B");
 }
 
+void forkEx()
+{
+    int parentPid = getPid();
+    printf("Task Pid ");
+    printNumber(parentPid);
+    printf("\n");
+
+    int childPid = 0;
+    fork(&childPid);
+    if(childPid != 0)
+    {
+        printf("Parent task is waiting for the child.\n");
+        waitpid(childPid);
+        printf("Parent Task  ");
+        printNumber(parentPid);
+        printf("executing.\n");
+    }
+    else
+    {
+        sleep(10000);
+        printf("Child Task ");
+        printNumber(getPid());
+        printf("executing");
+        printf("\n");
+    }
+    sys_exit();
+}
 
 
 typedef void (*constructor)();
@@ -235,22 +324,23 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     GlobalDescriptorTable gdt;
     
-
-
-    
     // uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
     // size_t heap = 10*1024*1024;
     
     // MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
     // void* allocated = memoryManager.malloc(1024);
 
-    TaskManager taskManager;
+    //TaskManager taskManager;
 
-    Task task1(&gdt, taskA);
-    Task task2(&gdt, taskB);
+    TaskManager taskManager(&gdt);
+    Task task(&gdt, forkEx);
     
-    taskManager.AddTask(&task1);
-    taskManager.AddTask(&task2);
+    taskManager.AddTask(&task);
+
+    //Task task2(&gdt, taskB);
+
+    //taskManager.AddTask(&task1);
+    //taskManager.AddTask(&task2);
     
     
     InterruptManager interrupts(0x20, &gdt, &taskManager);
