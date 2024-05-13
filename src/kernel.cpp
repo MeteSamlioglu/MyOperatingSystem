@@ -275,6 +275,15 @@ void taskB()
         sysprintf("B");
 }
 
+void execTask()
+{
+    printf("The Pid of the executed task is ");
+    printNumber(getPid());
+    printf("\n");
+    sys_exit();
+}
+
+
 void forkEx()
 {
     int parentPid = getPid();
@@ -290,18 +299,22 @@ void forkEx()
         waitpid(childPid);
         printf("Parent Task  ");
         printNumber(parentPid);
-        printf("executing.\n");
+        printf(" is executing\n");
     }
     else
     {
+        //exec(execTask); If you put to this line it will run compeletely another task, and ignore this task
         sleep(10000);
+        //exec(execTask);
         printf("Child Task ");
         printNumber(getPid());
-        printf("executing");
+        printf(" is executing");
         printf("\n");
     }
+    //exec(execTask);
     sys_exit();
 }
+
 
 
 typedef void (*constructor)();
@@ -324,27 +337,19 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
 
     GlobalDescriptorTable gdt;
     
-    // uint32_t* memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
-    // size_t heap = 10*1024*1024;
-    
-    // MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
-    // void* allocated = memoryManager.malloc(1024);
 
     //TaskManager taskManager;
 
     TaskManager taskManager(&gdt);
     Task task(&gdt, forkEx);
-    
     taskManager.AddTask(&task);
 
-    //Task task2(&gdt, taskB);
 
-    //taskManager.AddTask(&task1);
-    //taskManager.AddTask(&task2);
     
     
     InterruptManager interrupts(0x20, &gdt, &taskManager);
-    SyscallHandler syscalls(&interrupts, 0x80);
+    
+    SyscallHandler syscalls(&interrupts, 0x80); // 0x80 numaralı interruptları karşılayan handler
     
     //printf("Initializing Hardware, Stage 1\n");
 

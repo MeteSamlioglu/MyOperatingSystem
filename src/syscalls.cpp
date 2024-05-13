@@ -11,7 +11,7 @@ typedef enum SystemCalls{FORK, EXEC, WAITPID, ADDTASK, GETPID, EXIT, PRINTF};
 
 
 SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber)
-:    InterruptHandler(interruptManager, InterruptNumber  + interruptManager->HardwareInterruptOffset())
+:    InterruptHandler(interruptManager, InterruptNumber + interruptManager->HardwareInterruptOffset())
 {
 }
 

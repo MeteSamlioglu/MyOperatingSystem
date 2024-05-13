@@ -36,7 +36,7 @@ namespace myos
         common::uint32_t eip; /* Instruction Pointer */
         common::uint32_t cs;  /* Code Segment */
         common::uint32_t eflags; 
-        common::uint32_t esp; /* Stack Pointer, It shows where the current address of stack for the current task*/
+        common::uint32_t esp; /* Stack Pointer, It shows where the current address of stack for the current task, stack'in en son nerde kaldığının numarası*/
         common::uint32_t ss;        
     } __attribute__((packed));
     
