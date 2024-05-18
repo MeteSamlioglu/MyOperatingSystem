@@ -6,7 +6,7 @@
 #include <multitasking.h>
 #include <common/types.h>
 #include <hardwarecommunication/port.h>
-
+#include<savedTasks.h>
 
 namespace myos
 {
@@ -24,10 +24,11 @@ namespace myos
             ~InterruptHandler();
             
             common::uint32_t syscall_addTask(common::uint32_t entrypoint); /*An interrupt for adding a new task to task manager*/
-            common::uint32_t syscall_getpid();
+            common::uint32_t syscall_getpid(Saved* array, int arraySize);
             common::uint32_t system_exit();
             common::uint32_t system_execute(common::uint32_t ptr);
-            common::uint32_t system_fork(CPUState* cpustate);
+            //common::uint32_t system_fork(CPUState* cpustate);
+            common::uint32_t system_fork(CPUState* cpustate, Saved* array, int arraySize);
 
             bool system_waitpid(common::uint32_t pid);
 

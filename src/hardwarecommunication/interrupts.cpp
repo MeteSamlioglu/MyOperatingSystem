@@ -7,7 +7,7 @@ using namespace myos::hardwarecommunication;
 
 void printf(char* str);
 void printfHex(uint8_t);
-
+void printNumber(int number);
 
 
 
@@ -179,7 +179,6 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     {
         //printf("UNHANDLED INTERRUPT 0x");
         //printfHex(interrupt);
-    
     }
     
     if(interrupt == hardwareInterruptOffset)
@@ -204,8 +203,10 @@ common::uint32_t InterruptHandler::syscall_addTask(common::uint32_t entrypoint)
 
 }
 
-common::uint32_t InterruptHandler::syscall_getpid()
+common::uint32_t InterruptHandler::syscall_getpid(Saved* array, int arraySize)
 {
+    int currTaskNum = interruptManager->taskManager->getCurrentTaskNumber();
+    interruptManager->taskManager->setTask(&array[currTaskNum]);
     
     return interruptManager->taskManager->getTaskPid();
 
@@ -232,9 +233,11 @@ bool InterruptHandler::system_waitpid(common::uint32_t pid)
     return interruptManager->taskManager->wait(pid);
 }
 
-common::uint32_t InterruptHandler::system_fork(CPUState* cpustate)
+
+common::uint32_t InterruptHandler::system_fork(CPUState* cpustate, Saved* saved_tasks, int arraySize)
 {
-    return interruptManager->taskManager->fork(cpustate);
+    
+    return interruptManager->taskManager->fork(cpustate, saved_tasks, arraySize);
 }
 
 

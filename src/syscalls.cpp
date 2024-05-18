@@ -1,6 +1,6 @@
 
 #include <syscalls.h>
- 
+#include <savedtasks.h>
 using namespace myos;
 using namespace myos::common;
 using namespace myos::hardwarecommunication;
@@ -9,6 +9,8 @@ using namespace myos::hardwarecommunication;
 
 typedef enum SystemCalls{FORK, EXEC, WAITPID, ADDTASK, GETPID, EXIT, PRINTF};
 
+uint32_t saved_pids[256];
+uint32_t saved_ppids[256];
 
 SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber)
 :    InterruptHandler(interruptManager, InterruptNumber + interruptManager->HardwareInterruptOffset())
@@ -19,9 +21,14 @@ SyscallHandler::~SyscallHandler()
 {
 }
 
+int savedTasksCounter = 0;
+
+Saved saved_tasks[256];
+
+
 
 void printf(char*);
-
+void printNumber(int number);
 
 void myos::waitpid(common::uint8_t wPid)
 {
@@ -92,6 +99,21 @@ int myos::addTask(void entrypoint())
     return result;
 }
 
+void print()
+{
+    for(int i = 0 ; i < 4; i++)
+    {
+        printf("pid : ");
+        printNumber(saved_tasks[i].pid);
+        printf(" ppid: ");
+        printNumber(saved_tasks[i].ppid);
+        printf("\n");
+    }
+}
+
+
+
+
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 {
     CPUState* cpu = (CPUState*)esp;
@@ -110,7 +132,8 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             cpu->ecx = InterruptHandler::syscall_addTask(cpu->ebx);
         
         case SystemCalls::GETPID:
-            cpu->ecx = InterruptHandler::syscall_getpid();
+            print();
+            cpu->ecx = InterruptHandler::syscall_getpid(saved_tasks, 256);
             break;
         case SystemCalls::EXIT:
             if(InterruptHandler::system_exit())
@@ -124,9 +147,17 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
                 return InterruptHandler::HandleInterrupt(esp); /* Schedule another process*/
             break;
         case SystemCalls::FORK:
-            //cpu->ecx = InterruptHandler::system_fork(cpu);
-            ecx_ = InterruptHandler::system_fork(cpu);
+
+            ecx_ = InterruptHandler::system_fork(cpu,saved_tasks, 256);
+            // saved_tasks[savedTasksCounter] = getPid() 
             esp_ = InterruptHandler::HandleInterrupt(esp);
+            
+            // printf("Parent Task Pid ");
+        
+            // printNumber((int)saved_tasks[0].pid);
+            // printNumber((int)saved_tasks[0].ppid);
+            // printNumber((int)getPid());
+            // savedTasksCounter++;
             cpu->ecx = ecx_;
             return esp_;
             //return InterruptHandler::HandleInterrupt(esp);

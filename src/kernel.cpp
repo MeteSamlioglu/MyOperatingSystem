@@ -134,29 +134,6 @@ void printfHex32(uint32_t key)
     printfHex( key & 0xFF);
 }
 
-void forkTestExample()
-{
-    int parentPid=getPid();
-    printf("taskC Pid:");
-    printNumber(parentPid);
-    printf("\n");
-    int childPid=0;
-    fork(&childPid);
-    if(childPid==0){
-        printf("Child Task ");
-        printNumber(childPid);
-        printf("\n");
-    }else{
-        printf("Parent Task ");
-        printNumber(getPid());
-        printf("\n");
-    }
-
-    printf("taskC End Pid:");
-    printNumber(getPid());
-    printf("\n");
-    sys_exit();
-}
 
 
 class PrintfKeyboardEventHandler : public KeyboardEventHandler
@@ -317,6 +294,7 @@ void forkEx()
 void multipleForks()
 {
     int childPids[3] = {0, 0, 0};
+    
     for(int i = 0 ; i < 3; i++)
     {
         int pid = childPids[i];
@@ -328,18 +306,21 @@ void multipleForks()
             printf("Parent task is waiting for the child.\n");
             waitpid(childPids[i]);
             printf("Parent Task ");
-            printNumber(getPid());
+            //printNumber(getPid());
             printf(" is executing.\n");
         }
         else
         {
             printf("Child Task ");
-            printNumber(getPid());
+            //printNumber(getPid());
             printf(" is executing.");
             printf("\n");
             sys_exit();
         }
     }
+
+    getPid();
+    
 }
 
 
@@ -367,7 +348,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     //TaskManager taskManager;
 
     TaskManager taskManager(&gdt);
-    Task task(&gdt, multipleForks);
+    Task task1(&gdt, multipleForks);
     taskManager.AddTask(&task);
 
 

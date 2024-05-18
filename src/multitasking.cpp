@@ -6,10 +6,10 @@ using namespace myos::common;
 
 /* Task Class Implementations*/
 
-common::uint32_t Task::pid_counter = 1;
+common::uint32_t pid_counter = 1;
 
 void printf(char* str);
-void printNum(int num);
+void printNumber(int num);
 
 
 Task::Task(GlobalDescriptorTable *gdt, void ptr())
@@ -102,7 +102,10 @@ TaskManager::TaskManager(GlobalDescriptorTable *gdt_)
 common::uint32_t TaskManager::AddTask(void ptr())
 {
     tasks[numTasks].task_state=READY;
-    tasks[numTasks].pid=Task::pid_counter++;
+    
+    tasks[numTasks].pid = pid_counter++;
+
+
     tasks[numTasks].cpustate = (CPUState*)(tasks[numTasks].stack + 4096 - sizeof(CPUState));
     
     tasks[numTasks].cpustate -> eax = 0;
@@ -126,7 +129,7 @@ bool TaskManager::AddTask(Task* task)
 {
     if(numTasks >= 256) /* Max Size for task array*/
         return false;
-    
+  
     tasks[numTasks].task_state = READY;
     tasks[numTasks].pid=task->pid;
     
@@ -196,15 +199,21 @@ void saveCPUState(CPUState* dest, const CPUState* src)
     dest->ss = src->ss;
 }
 
-common::uint32_t TaskManager::fork(CPUState* cpustate)
+common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int arraySize)
 {
 
     if (numTasks >= 256)
         return 0;
-
     tasks[numTasks].task_state = READY;
     tasks[numTasks].parent_pid = tasks[currentTask].pid;
-    tasks[numTasks].pid = Task::pid_counter++;
+    tasks[numTasks].pid = pid_counter++;
+    
+    saved_tasks[currentTask].pid = tasks[currentTask].pid;
+    saved_tasks[currentTask].ppid = 0; //parent pid of parent is zero
+
+    saved_tasks[numTasks].pid = tasks[numTasks].pid;
+    saved_tasks[numTasks].ppid = tasks[numTasks].parent_pid;
+    
 
     for(int i = 0 ; i < sizeof(tasks[currentTask].stack); i++)
     {
@@ -212,10 +221,12 @@ common::uint32_t TaskManager::fork(CPUState* cpustate)
     }
     
     tasks[numTasks].cpustate = (CPUState*)(tasks[numTasks].stack + 4096 - sizeof(CPUState));
-    
+
     saveCPUState(tasks[numTasks].cpustate, cpustate);
     uint32_t espOffset = (uint32_t)cpustate->esp - (uint32_t)tasks[currentTask].stack;
     tasks[numTasks].cpustate->esp = (uint32_t) tasks[numTasks].stack + espOffset;
+    
+
 
     // common::uint32_t currentTaskOffset=((common::uint32_t)tasks[currentTask].cpustate) - ((common::uint32_t)cpustate);
     // tasks[numTasks].cpustate=(CPUState*)(((common::uint32_t)tasks[numTasks].cpustate) - currentTaskOffset);
@@ -224,6 +235,18 @@ common::uint32_t TaskManager::fork(CPUState* cpustate)
     numTasks++;
     
     return tasks[numTasks-1].pid; /*Return current id's process id*/
+}
+
+int TaskManager::getCurrentTaskNumber() const
+{
+    
+    return currentTask;
+
+}
+void TaskManager::setTask(Saved *task)
+{
+    tasks[currentTask].pid = task->pid;
+    tasks[currentTask].parent_pid = task->ppid;
 }
 
 
@@ -349,4 +372,48 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
     }
     currentTask=findTask;
     return tasks[currentTask].cpustate;
+}
+
+/* TaskRecovery */
+
+TaskRecovery::TaskRecovery()
+{
+    pid = 0;
+    parent_pid = 0;
+    wait_pid = 0;
+}
+TaskRecovery::TaskRecovery(common::uint32_t pid_)
+:pid(pid_)
+{
+
+}
+TaskRecovery::TaskRecovery(common::uint32_t pid_, common::uint32_t parent_pid_)
+:pid(pid_), parent_pid(parent_pid_)
+{
+
+}
+void TaskRecovery::setTaskState(State task_state_)
+{
+    task_state = task_state_;
+}
+
+common::uint32_t TaskRecovery::getTaskPid()
+{
+    return pid;
+}
+common::uint32_t TaskRecovery::getParentPid()
+{
+    return parent_pid;
+}
+common::uint32_t TaskRecovery::getWaitPid()
+{
+    return wait_pid;
+}
+State TaskRecovery::getTaskState()
+{
+    return task_state;
+}
+void TaskRecovery::setTaskPid(common::uint32_t pid_)
+{
+    pid = pid_;
 }
