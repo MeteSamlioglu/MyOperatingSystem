@@ -314,7 +314,33 @@ void forkEx()
     //exec(execTask);
     sys_exit();
 }
+void multipleForks()
+{
+    int childPids[3] = {0, 0, 0};
+    for(int i = 0 ; i < 3; i++)
+    {
+        int pid = childPids[i];
+        printf("Forked\n");
+        fork(&pid);
 
+        if(pid > 0)
+        {
+            printf("Parent task is waiting for the child.\n");
+            waitpid(childPids[i]);
+            printf("Parent Task ");
+            printNumber(getPid());
+            printf(" is executing.\n");
+        }
+        else
+        {
+            printf("Child Task ");
+            printNumber(getPid());
+            printf(" is executing.");
+            printf("\n");
+            sys_exit();
+        }
+    }
+}
 
 
 typedef void (*constructor)();
@@ -341,7 +367,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     //TaskManager taskManager;
 
     TaskManager taskManager(&gdt);
-    Task task(&gdt, forkEx);
+    Task task(&gdt, multipleForks);
     taskManager.AddTask(&task);
 
 

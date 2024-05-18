@@ -177,6 +177,24 @@ bool TaskManager::exit()
     tasks[currentTask].task_state = FINISHED; /* Never schedule it again!*/
     return true;
 }
+void saveCPUState(CPUState* dest, const CPUState* src)
+{
+    if(!dest || !src) return;
+
+    dest->eax = src->eax;
+    dest->ebx = src->ebx;
+    dest->ecx = src->ecx;
+    dest->edx = src->edx;
+    dest->esi = src->esi;
+    dest->edi = src->edi;
+    dest->ebp = src->ebp;
+    dest->error = src->error;
+    dest->eip = src->eip;
+    dest->cs = src->cs;
+    dest->eflags = src->eflags;
+    dest->esp = src->esp;
+    dest->ss = src->ss;
+}
 
 common::uint32_t TaskManager::fork(CPUState* cpustate)
 {
@@ -194,10 +212,17 @@ common::uint32_t TaskManager::fork(CPUState* cpustate)
     }
     
     tasks[numTasks].cpustate = (CPUState*)(tasks[numTasks].stack + 4096 - sizeof(CPUState));
-    common::uint32_t currentTaskOffset=((common::uint32_t)tasks[currentTask].cpustate) - ((common::uint32_t)cpustate);
-    tasks[numTasks].cpustate=(CPUState*)(((common::uint32_t)tasks[numTasks].cpustate) - currentTaskOffset);
+    
+    saveCPUState(tasks[numTasks].cpustate, cpustate);
+    uint32_t espOffset = (uint32_t)cpustate->esp - (uint32_t)tasks[currentTask].stack;
+    tasks[numTasks].cpustate->esp = (uint32_t) tasks[numTasks].stack + espOffset;
+
+    // common::uint32_t currentTaskOffset=((common::uint32_t)tasks[currentTask].cpustate) - ((common::uint32_t)cpustate);
+    // tasks[numTasks].cpustate=(CPUState*)(((common::uint32_t)tasks[numTasks].cpustate) - currentTaskOffset);
+    
     tasks[numTasks].cpustate->ecx = 0; /*set child's pid to 0*/
     numTasks++;
+    
     return tasks[numTasks-1].pid; /*Return current id's process id*/
 }
 

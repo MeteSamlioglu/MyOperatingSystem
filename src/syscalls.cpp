@@ -98,7 +98,8 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     
     /* Stack pointer içinde CPU state'i saklıyor*/
     /*Yukarıda a'ya SystemCall::GETPID'i koyduk yani integer 1 bu da eax'e karşılık geliyor  */
-
+    uint32_t ecx_;
+    uint32_t esp_;
     switch(cpu->eax)
     {
         case SystemCalls::PRINTF:
@@ -123,8 +124,12 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
                 return InterruptHandler::HandleInterrupt(esp); /* Schedule another process*/
             break;
         case SystemCalls::FORK:
-            cpu->ecx = InterruptHandler::system_fork(cpu);
-            return InterruptHandler::HandleInterrupt(esp);
+            //cpu->ecx = InterruptHandler::system_fork(cpu);
+            ecx_ = InterruptHandler::system_fork(cpu);
+            esp_ = InterruptHandler::HandleInterrupt(esp);
+            cpu->ecx = ecx_;
+            return esp_;
+            //return InterruptHandler::HandleInterrupt(esp);
                 
             break;
         default:
