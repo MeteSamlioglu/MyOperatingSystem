@@ -42,6 +42,15 @@ void sleep(uint32_t milliseconds)
         }
     }
 }
+void sleep2(uint32_t milliseconds)
+{
+    for (uint32_t i = 0; i < milliseconds; i++) 
+    {
+        for (uint32_t j = 0; j < 10000000; j++) {
+            asm volatile("nop");
+        }
+    }
+}
 
 char* itoa(int value, char* result, int base) {
     // Check that the base is valid
@@ -292,11 +301,57 @@ void taskB()
     while(true)
         sysprintf("B");
 }
+void LinearSearch()
+{
+    
+    int target = 60;
+    int output = -1;
+    int array[10] = {10, 20, 80, 30, 60, 50, 110, 100, 130, 170};
 
+    for(int i = 0 ; i < 10; i++ )
+    {
+        if(array[i] == target)
+        {
+            output = i;
+            break;
+        }
+    }
+    printf("Output: ");
+    printNumber(output);
+    printf("\n");
+}
+
+void BinarySearch() {
+    int array[10] = {10, 20, 30, 50, 60, 80, 100, 110, 130, 170}; // Sorted array
+    int x = 110;
+    int size = 10;
+
+    int left = 0;
+    int right = size - 1;
+    int output = -1;
+
+    while (left <= right) {
+        int mid = left + (right - left) / 2;
+
+        if (array[mid] == x) {
+            output = mid;
+            break;
+        }
+        if (array[mid] < x) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+
+    printf( "Output: ");
+    printNumber(output);
+    printf("\n");
+}
 
 bool flag = false;
 
-void lifeCycle()
+void lifeCycle1()
 {
     int childPids[3] = {0, 0, 0};
  
@@ -321,6 +376,7 @@ void lifeCycle()
             printNumber(getPid());
             printf(" is created by Parent ");
             printNumber(getParentPid());
+            printf("\n");
 
             while(flag == false)   /* Childs will wait until all child processes are created and parent signal them */
             { };
@@ -328,20 +384,34 @@ void lifeCycle()
             printNumber(getPid());
             printf(" is executing.");
             printf("\n");
-            exec(printCollatzSequence); /* Execute the task and terminate */
+            //printProcessTable();
+            //printf("sssss");
+            // sleep(1000);
+            exec(long_runnig_program); /* Execute the task and terminate */
         }
     }
     printf("\nParent is waiting for all childs to terminate...\n");    
-    //printProcessTable();
+    printProcessTable();
+    // sleep(10000);
 
     flag = true; /*Release all processes */
     for(int i = 0 ; i < 3 ; i++)
     {
         waitpid(childPids[i]);  /* Parent is waiting for all childs to terminate */
     }
+    sleep(10000);
+    printf("\n\n\n\n\n\n\n\n");
     printProcessTable();
+    // sleep(1000);
     printf("Parent is terminated.");
     sys_exit();
+}
+void testSleepFunction()
+{
+    printf("Testing Sleep");
+    sleep(1000);
+    printf("Terminating");
+
 }
 // void singleForkExample()
 // {
@@ -369,38 +439,42 @@ void lifeCycle()
 //     sys_exit();
 // }
 
-// void multipleForks2()
-// {
-//     int childPids[3] = {0, 0, 0};
+void multipleForks()
+{
+    int childPids[3] = {0, 0, 0};
     
-//     printf("------------------------------\n");
-//     for(int i = 0 ; i < 3; i++)
-//     {
-//         int pid = childPids[i];
-//         //printf("Forked: ");
-//         fork(&pid);
+    for(int i = 0 ; i < 3; i++)
+    {
+        int pid = childPids[i];
+        printf("Forked: ");
+        fork(&pid);
 
-//         if(pid > 0)
-//         {
-//             printf("Parent task is waiting for the child.\n");
-//             waitpid(childPids[i]);
-//             printf("Parent Task ");
-//             printNumber(getPid());
-//             printf(" is executing.\n");
-//         }
-//         else
-//         {
-//             printf("Child Task ");
-//             printNumber(getPid());
-//             printf(" is executing.");
-//             printf("\n");
-//             sys_exit();
-//         }
-//     }
+        if(pid > 0)
+        {
+            printf("Parent task is waiting for the child.\n");
+            waitpid(childPids[i]);
+            printf("Parent Task ");
+            printNumber(getPid());
+            printf(" is executing.\n");
+            // sleep(1000);
 
-//     getPid();
-//     sys_exit();
-// }
+        }
+        else
+        {
+            printf("Child Task ");
+            printNumber(getPid());
+            printf(" is executing.");
+            printf("\n");
+            // printProcessTable();
+            // sleep(1000);
+            sys_exit();
+        }
+    }
+    //printProcessTable();
+    sys_exit();
+    printProcessTable();
+
+}
 
 
 
@@ -427,9 +501,9 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     
 
     //TaskManager taskManager;
-
+    // BinarySearch();
     TaskManager taskManager(&gdt);
-    Task task1(&gdt, lifeCycle);
+    Task task1(&gdt, lifeCycle1);
     taskManager.AddTask(&task1);
     
     //sleep(10000);s

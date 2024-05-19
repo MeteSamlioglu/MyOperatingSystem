@@ -190,6 +190,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
 
         case SystemCalls::PTABLE:
             InterruptHandler::system_printPTable(saved_tasks, 256);
+            return InterruptHandler::HandleInterrupt(esp);
             break;
         
         default:

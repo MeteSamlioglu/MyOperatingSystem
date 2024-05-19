@@ -10,6 +10,7 @@ namespace myos {
 struct Saved {
     common::uint32_t pid;
     common::uint32_t ppid;
+    // common::uint32_t priority;
 };
 
 } // namespace myos

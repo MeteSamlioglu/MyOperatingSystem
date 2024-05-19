@@ -1,7 +1,7 @@
  
 #ifndef __MYOS__MULTITASKING_H
 #define __MYOS__MULTITASKING_H
-
+#define DEFAULT_PRIORTIY 10
 #include <common/types.h>
 #include <gdt.h>
 #include<savedTasks.h>
@@ -55,6 +55,7 @@ namespace myos
         common::uint32_t pid = 0; /*pid of the current process*/
         common::uint32_t parent_pid = 0; /*pid of the parent process*/
         common::uint32_t wait_pid = 0; 
+        common::uint32_t priority; /*priority of each task*/
 
         State task_state; /*Stores the state of the current task*/
         // static common::uint32_t pid_counter;
@@ -94,12 +95,12 @@ namespace myos
             common::uint32_t AddTask(void ptr()); /* Add task by passing a function parameter*/
             common::uint32_t getTaskPid();  /* Returns the pid of the current task*/
             common::uint32_t getParentPid(); /*Returns the pid of the parennt */
+            common::uint32_t getPriority(); /*Priority of the task*/
             common::uint32_t fork(CPUState* cpustate, Saved* array, int arraySize);           
             common::uint32_t exec(void ptr());
             
             //void exec(void ptr());
             void setTask(Saved *task);
-            
             int getCurrentTaskNumber() const;
             int getIndex(common::uint32_t pid);
     };

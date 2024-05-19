@@ -10,7 +10,7 @@ common::uint32_t pid_counter = 1;
 
 void printf(char* str);
 void printNumber(int num);
-
+void sleep(uint32_t milliseconds);
 
 Task::Task(GlobalDescriptorTable *gdt, void ptr())
 {
@@ -222,16 +222,19 @@ common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int a
     tasks[numTasks].task_state = READY;
     tasks[numTasks].parent_pid = tasks[currentTask].pid;
     tasks[numTasks].pid = pid_counter++;
+    // tasks[numTasks].priority = DEFAULT_PRIORTIY;
 
     // printf("Pid Counter ");
     // printNumber((int)tasks[numTasks].pid);
     
     saved_tasks[currentTask].pid = tasks[currentTask].pid;
     saved_tasks[currentTask].ppid = tasks[currentTask].pid; //parent pid of parent is zero
-
+    // saved_tasks[currentTask].priority = DEFAULT_PRIORTIY;
 
     saved_tasks[numTasks].pid = tasks[numTasks].pid;
     saved_tasks[numTasks].ppid = tasks[numTasks].parent_pid;
+    // saved_tasks[numTasks].priority =   tasks[numTasks].priority;
+
     
     //printf("Parent pid ");
     //printNumber(saved_tasks[numTasks].ppid);    
@@ -317,40 +320,19 @@ bool TaskManager::wait(common::uint32_t esp)
     tasks[currentTask].wait_pid = pid;
     tasks[currentTask].task_state = BLOCKED;
        
-
     return true;
 }
+
 common::uint32_t TaskManager::getParentPid()
 {
     return tasks[currentTask].parent_pid;
 }
-/* Modif*/
-// void TaskManager::printTable(){
-    
-//     printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
-//     printf("PID\tPPID\tSTATE\n");
-//     for (int i = 0; i < numTasks; i++)
-//     {
-//         printNum(tasks[i].pid);
-//         printf("\t  ");
-//         printNum(tasks[i].parent_pid);
-//         printf("\t   ");
-//         if(tasks[i].task_state==State::READY){
-//             if(i==currentTask)
-//                 printf("RUNNING");
-//             else
-//                 printf("READY");
-//         }else if(tasks[i].task_state==State::BLOCKED){
-//             printf("BLOCKED");
-//         }else if(tasks[i].task_state==State::FINISHED){
-//             printf("FINISHED");
-//         }
-//         printf("\n");
-//     }
-//     printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
-    
-//     /*Put sleep here*/
-// }
+
+common::uint32_t TaskManager::getPriority()
+{
+    return tasks[currentTask].priority;
+}
+
 void TaskManager::printProcessTable(Saved* savedTasks, int size)
 {
     printf("---------------------------------------------\n");
@@ -383,6 +365,8 @@ void TaskManager::printProcessTable(Saved* savedTasks, int size)
         printf("\n");
     }
     printf("---------------------------------------------\n");
+    sleep(10000);
+
 }
 
 // CPUState* TaskManager::Schedule(CPUState* cpustate)
