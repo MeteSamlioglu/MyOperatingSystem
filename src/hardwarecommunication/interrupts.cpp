@@ -185,7 +185,7 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     if(interrupt == hardwareInterruptOffset)
     {
         // printf("Timer");
-        // sleep(1000);
+    
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
     }
 
@@ -204,6 +204,11 @@ common::uint32_t InterruptHandler::syscall_addTask(common::uint32_t entrypoint)
     
     return interruptManager->taskManager->AddTask((void (*)())entrypoint);
 
+}
+
+common::uint32_t InterruptHandler::system_getPPID()
+{
+    return interruptManager->taskManager->getParentPid();
 }
 
 common::uint32_t InterruptHandler::syscall_getpid(Saved* array, int arraySize)
@@ -246,7 +251,12 @@ common::uint32_t InterruptHandler::system_fork(CPUState* cpustate, Saved* saved_
 
 
 
+void InterruptHandler::system_printPTable(Saved* savedProcesses, int size)
+{
+    
+    interruptManager->taskManager->printProcessTable(savedProcesses, size);
 
+}
 
 
 

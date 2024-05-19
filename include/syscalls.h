@@ -29,6 +29,10 @@ namespace myos
     void waitpid(common::uint8_t wPid);
     int addTask(void entrypoint());
     void sysprintf(char* str);
+    int getParentPid();
+    void printProcessTable();
+
+
 }
 
 

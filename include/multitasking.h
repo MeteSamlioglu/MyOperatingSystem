@@ -89,7 +89,7 @@ namespace myos
 
             bool exit(); /* Terminates the task immediately*/
             bool wait(common::uint32_t pid); /* wait pid basically*/
-            void printTable();
+            void printProcessTable(Saved* saved, int size);
             
             common::uint32_t AddTask(void ptr()); /* Add task by passing a function parameter*/
             common::uint32_t getTaskPid();  /* Returns the pid of the current task*/

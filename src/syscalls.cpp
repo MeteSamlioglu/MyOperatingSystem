@@ -7,7 +7,7 @@ using namespace myos::hardwarecommunication;
  
 
 
-typedef enum SystemCalls{FORK, EXEC, WAITPID, ADDTASK, GETPID, EXIT, PRINTF};
+typedef enum SystemCalls{FORK, EXEC, WAITPID, ADDTASK, GETPID, EXIT, PRINTF, PPID, PTABLE};
 
 uint32_t saved_pids[256];
 uint32_t saved_ppids[256];
@@ -35,6 +35,15 @@ void myos::waitpid(common::uint8_t wPid)
     asm("int $0x80" : : "a" (SystemCalls::WAITPID),"b" (wPid));
 }
 
+int myos::getParentPid()
+{
+    int parent_pid = -1;        
+        
+    asm("int $0x80" : "=c" (parent_pid) : "a" (SystemCalls::PPID)); // 0x80 -> interrupt interrupt number
+
+    return parent_pid;
+}
+
 /*
     When an interrupt happened with number 0x80, assign SystemCalls:EXIT value to eax register
 */
@@ -51,6 +60,11 @@ void myos::sysprintf(char* str)
 void myos::fork()
 {
     asm("int $0x80" :: "a" (SystemCalls::FORK));
+}
+
+void myos::printProcessTable()
+{
+    asm("int $0x80" :: "a" (SystemCalls::PTABLE));
 }
 
 void myos::fork(int *pid)
@@ -170,6 +184,14 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             //return InterruptHandler::HandleInterrupt(esp);
                 
             break;
+        case SystemCalls::PPID:
+            cpu->ecx = InterruptHandler::system_getPPID();
+            break;
+
+        case SystemCalls::PTABLE:
+            InterruptHandler::system_printPTable(saved_tasks, 256);
+            break;
+        
         default:
             break;
     }

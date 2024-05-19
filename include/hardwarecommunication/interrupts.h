@@ -25,8 +25,12 @@ namespace myos
             
             common::uint32_t syscall_addTask(common::uint32_t entrypoint); /*An interrupt for adding a new task to task manager*/
             common::uint32_t syscall_getpid(Saved* array, int arraySize);
-            common::uint32_t system_exit();
-            common::uint32_t system_execute(common::uint32_t ptr);
+            common::uint32_t system_exit();   /* Marks the task as finished*/
+            common::uint32_t system_execute(common::uint32_t ptr); /* An interrupt to execute another task and terminate*/
+            common::uint32_t system_getPPID();    /* An interrupt to get parent pid*/
+            void system_printPTable(Saved* savedProcesses, int size); /* An interrupt for printing process table*/
+
+
             //common::uint32_t system_fork(CPUState* cpustate);
             common::uint32_t system_fork(CPUState* cpustate, Saved* array, int arraySize);
 

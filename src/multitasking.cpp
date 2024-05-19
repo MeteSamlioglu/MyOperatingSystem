@@ -320,7 +320,10 @@ bool TaskManager::wait(common::uint32_t esp)
 
     return true;
 }
-
+common::uint32_t TaskManager::getParentPid()
+{
+    return tasks[currentTask].parent_pid;
+}
 /* Modif*/
 // void TaskManager::printTable(){
     
@@ -347,11 +350,40 @@ bool TaskManager::wait(common::uint32_t esp)
 //     printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^^^\n");
     
 //     /*Put sleep here*/
-//     for (int i = 0; i < 10000000; i++){
-//         printf("");
-//     }
-    
 // }
+void TaskManager::printProcessTable(Saved* savedTasks, int size)
+{
+    printf("---------------------------------------------\n");
+    printf("ProcessId    ProcessParentId   ProcessState");
+    printf("\n");
+    
+    for(int i = 0 ; i < numTasks; i++)
+    {
+        printf(" ");
+        printNumber(savedTasks[i].pid);
+        printf("                   ");
+        printNumber(savedTasks[i].ppid);
+        printf("             ");
+        if(tasks[i].task_state == READY && i == getCurrentTaskNumber())
+        {
+            printf("RUNNING");
+        }
+        else if(tasks[i].task_state == READY && i != getCurrentTaskNumber())
+        {
+            printf("READY");
+        }
+        if(tasks[i].task_state == FINISHED)
+        {
+            printf("FINISHED");
+        }
+        if(tasks[i].task_state == BLOCKED)
+        {
+            printf("BLOCKED");
+        }
+        printf("\n");
+    }
+    printf("---------------------------------------------\n");
+}
 
 // CPUState* TaskManager::Schedule(CPUState* cpustate)
 // {

@@ -311,15 +311,16 @@ void lifeCycle()
             // printf("Parent task is waiting for the child.\n");
             // waitpid(childPids[i]);
             childPids[i] = pid; /* Save child pids */
-            printf(" Parent with id ");
-            printNumber(getPid());
-            printf("\n");
+            // printf(" Parent with id ");
+            // printNumber(getPid());
+            // printf("\n");
         }
         else
         {
             printf("Child Task ");
             printNumber(getPid());
-            printf(" is created by");
+            printf(" is created by Parent ");
+            printNumber(getParentPid());
 
             while(flag == false)   /* Childs will wait until all child processes are created and parent signal them */
             { };
@@ -330,13 +331,15 @@ void lifeCycle()
             exec(printCollatzSequence); /* Execute the task and terminate */
         }
     }
-    printf("Parent is waiting for all childs to terminate...\n");    
+    printf("\nParent is waiting for all childs to terminate...\n");    
+    //printProcessTable();
+
     flag = true; /*Release all processes */
     for(int i = 0 ; i < 3 ; i++)
     {
         waitpid(childPids[i]);  /* Parent is waiting for all childs to terminate */
     }
-    
+    printProcessTable();
     printf("Parent is terminated.");
     sys_exit();
 }
