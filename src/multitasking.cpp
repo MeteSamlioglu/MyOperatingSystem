@@ -198,7 +198,6 @@ void saveCPUState(CPUState* to, const CPUState* from)
         printf("Copying operation is not happened, source CPU state is empty \n");
         return;
     }
-
     to->eax = from->eax;
     to->ebx = from->ebx;
     to->ecx = from->ecx;
@@ -259,6 +258,16 @@ common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int a
     return tasks[numTasks-1].pid; /*Return current id's process id*/
 }
 
+common::uint32_t TaskManager::forkPriority(CPUState* cpustate)
+{    
+    // printf(" (Priority) ");
+    tasks[currentTask].priority = cpustate->ebx;
+    
+    // printNumber((int) tasks[currentTask].priority);
+    // printf(" ");
+}
+
+
 int TaskManager::getCurrentTaskNumber() const
 {
     
@@ -280,7 +289,7 @@ common::uint32_t TaskManager::getTaskPid()
     return tasks[currentTask].pid;
 }
 
-int TaskManager::getIndex(common::uint32_t pid)
+int TaskManager::getProcess(common::uint32_t pid)
 {
   
     for(int i = 0; i < numTasks; i++)
@@ -299,7 +308,7 @@ bool TaskManager::wait(common::uint32_t esp)
     CPUState *cpustate=(CPUState*)esp;
     common::uint32_t pid=cpustate->ebx;
 
-    int check_exist = getIndex(pid);
+    int check_exist = getProcess(pid);
 
     if(tasks[check_exist].task_state == FINISHED)
     {
@@ -332,6 +341,7 @@ common::uint32_t TaskManager::getPriority()
 {
     return tasks[currentTask].priority;
 }
+
 
 void TaskManager::printProcessTable(Saved* savedTasks, int size)
 {
@@ -369,39 +379,70 @@ void TaskManager::printProcessTable(Saved* savedTasks, int size)
 
 }
 
+
 // CPUState* TaskManager::Schedule(CPUState* cpustate)
 // {
 //     if(numTasks <= 0)
 //         return cpustate;
-    
 //     if(currentTask >= 0)
 //         tasks[currentTask].cpustate = cpustate;
     
-//     if(++currentTask >= numTasks)
-//         currentTask %= numTasks;
+//     int findTask=(currentTask+1)%numTasks;
+    
+//     int counter = 0;
+
+//     int ready_states = 0;
+
+//     while (tasks[findTask].task_state!=READY)
+//     {
+//         if(tasks[findTask].task_state==BLOCKED && tasks[findTask].wait_pid>0){
+
+//             int waitTaskIndex=0;
+//             waitTaskIndex=getProcess(tasks[findTask].wait_pid);
+//             if(waitTaskIndex>-1 && tasks[waitTaskIndex].task_state!=BLOCKED){
+//                 if (tasks[waitTaskIndex].task_state==FINISHED)
+//                 {
+//                     tasks[findTask].wait_pid=0;
+//                     tasks[findTask].task_state=READY;
+//                     continue;
+//                 }else if (tasks[waitTaskIndex].task_state==READY)
+//                 {
+//                     findTask=waitTaskIndex;
+//                     continue;
+//                 }
+                
+//             }
+//         }
+//         findTask= (++findTask) % numTasks;
+//     }
+
+//     currentTask=findTask;
 //     return tasks[currentTask].cpustate;
 // }
-
 CPUState* TaskManager::Schedule(CPUState* cpustate)
 {
     if(numTasks <= 0)
         return cpustate;
+    
     if(currentTask >= 0)
+    {
         tasks[currentTask].cpustate = cpustate;
+    }    
     
     int findTask=(currentTask+1)%numTasks;
     
     int counter = 0;
     int ready_states = 0;
 
-
-
     while (tasks[findTask].task_state!=READY)
     {
-        if(tasks[findTask].task_state==BLOCKED && tasks[findTask].wait_pid>0){
+        if(tasks[findTask].task_state==BLOCKED && tasks[findTask].wait_pid>0) /*If the current task is parent*/
+        {
 
             int waitTaskIndex=0;
-            waitTaskIndex=getIndex(tasks[findTask].wait_pid);
+            
+            waitTaskIndex = getProcess(tasks[findTask].wait_pid);
+            
             if(waitTaskIndex>-1 && tasks[waitTaskIndex].task_state!=BLOCKED){
                 if (tasks[waitTaskIndex].task_state==FINISHED)
                 {
@@ -422,6 +463,8 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
     currentTask=findTask;
     return tasks[currentTask].cpustate;
 }
+
+
 
 /* TaskRecovery */
 

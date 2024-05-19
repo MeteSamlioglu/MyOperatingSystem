@@ -55,7 +55,7 @@ namespace myos
         common::uint32_t pid = 0; /*pid of the current process*/
         common::uint32_t parent_pid = 0; /*pid of the parent process*/
         common::uint32_t wait_pid = 0; 
-        common::uint32_t priority; /*priority of each task*/
+        common::uint32_t priority = 0; /*priority of each task*/
 
         State task_state; /*Stores the state of the current task*/
         // static common::uint32_t pid_counter;
@@ -96,13 +96,14 @@ namespace myos
             common::uint32_t getTaskPid();  /* Returns the pid of the current task*/
             common::uint32_t getParentPid(); /*Returns the pid of the parennt */
             common::uint32_t getPriority(); /*Priority of the task*/
-            common::uint32_t fork(CPUState* cpustate, Saved* array, int arraySize);           
+            common::uint32_t fork(CPUState* cpustate, Saved* array, int arraySize);     
+            common::uint32_t forkPriority(CPUState* cpustate);      
             common::uint32_t exec(void ptr());
             
             //void exec(void ptr());
             void setTask(Saved *task);
             int getCurrentTaskNumber() const;
-            int getIndex(common::uint32_t pid);
+            int getProcess(common::uint32_t ProcessId);
     };
 
     class TaskRecovery

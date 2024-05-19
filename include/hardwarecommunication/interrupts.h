@@ -33,6 +33,9 @@ namespace myos
 
             //common::uint32_t system_fork(CPUState* cpustate);
             common::uint32_t system_fork(CPUState* cpustate, Saved* array, int arraySize);
+            common::uint32_t system_setPriorty(CPUState* cpustate);
+            common::uint32_t syscall_getPriority();
+
 
             bool system_waitpid(common::uint32_t pid);
 

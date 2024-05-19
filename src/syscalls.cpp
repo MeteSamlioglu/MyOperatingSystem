@@ -7,7 +7,7 @@ using namespace myos::hardwarecommunication;
  
 
 
-typedef enum SystemCalls{FORK, EXEC, WAITPID, ADDTASK, GETPID, EXIT, PRINTF, PPID, PTABLE};
+typedef enum SystemCalls{FORK, EXEC, WAITPID, ADDTASK, GETPID, EXIT, PRINTF, PPID, PTABLE, SETPR, GETPRIO};
 
 uint32_t saved_pids[256];
 uint32_t saved_ppids[256];
@@ -57,10 +57,6 @@ void myos::sysprintf(char* str)
     asm("int $0x80" : : "a" (SystemCalls::PRINTF), "b" (str));
 }
 
-void myos::fork()
-{
-    asm("int $0x80" :: "a" (SystemCalls::FORK));
-}
 
 void myos::printProcessTable()
 {
@@ -70,6 +66,20 @@ void myos::printProcessTable()
 void myos::fork(int *pid)
 {
     asm("int $0x80" :"=c" (*pid): "a" (SystemCalls::FORK));
+}
+
+void myos::setPriority(int *pid, int* priority)
+{
+    asm("int $0x80" :"=c" (*pid) : "a" (SystemCalls::SETPR), "b" (*priority));
+}
+
+int myos::getPriority()
+{
+    int priority = 0; 
+    
+    asm("int $0x80" : "=c" (priority) : "a" (SystemCalls::GETPRIO)); 
+    
+    return priority;
 }
 
 /* 
@@ -86,6 +96,7 @@ int myos::getPid()
     return task_pid;
 }
 
+
 /*
     Returns the pid of the newly created task
     Assign eax = EXEC
@@ -100,7 +111,6 @@ int myos::exec(void ptr())
     
     return pid;
 }
-
 
 /*
 ecx registerini result'a yaz, SystemCalls::ADDTASK değerini eax'e yaz, ebx'i entrypointe yaz. 
@@ -136,6 +146,8 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
     /*Yukarıda a'ya SystemCall::GETPID'i koyduk yani integer 1 bu da eax'e karşılık geliyor  */
     uint32_t ecx_;
     uint32_t esp_;
+    uint32_t ecx2_;
+    uint32_t esp2_;
     switch(cpu->eax)
     {
         case SystemCalls::PRINTF:
@@ -146,8 +158,11 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             cpu->ecx = InterruptHandler::syscall_addTask(cpu->ebx);
         
         case SystemCalls::GETPID:
-            //print();
             cpu->ecx = InterruptHandler::syscall_getpid(saved_tasks, 256);
+            break;
+        case SystemCalls::GETPRIO:
+            // printf("Triggered");
+            cpu->ecx = InterruptHandler::syscall_getPriority();
             break;
         case SystemCalls::EXIT:
             if(InterruptHandler::system_exit())
@@ -158,12 +173,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             esp_ = InterruptHandler::system_execute(cpu->ebx);
             
             return InterruptHandler::HandleInterrupt(esp);
-            // return esp;
-            // return esp;
-            //esp_ = InterruptHandler::HandleInterrupt(esp);
-            // printf("Execute Switch pid ");
-            // printNumber(getPid());
-            // return esp_;
+ 
             break;
         case SystemCalls::WAITPID:
             if(InterruptHandler::system_waitpid(esp))
@@ -174,11 +184,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             ecx_ = InterruptHandler::system_fork(cpu,saved_tasks, 256);
             // saved_tasks[savedTasksCounter] = getPid() 
             esp_ = InterruptHandler::HandleInterrupt(esp);
-            // printf("Parent Task Pid ");
-            // printNumber((int)saved_tasks[0].pid);
-            // printNumber((int)saved_tasks[0].ppid);
-            // printNumber((int)getPid());
-            // savedTasksCounter++;
+
             cpu->ecx = ecx_;
             return esp_;
             //return InterruptHandler::HandleInterrupt(esp);
@@ -189,10 +195,16 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             break;
 
         case SystemCalls::PTABLE:
-            InterruptHandler::system_printPTable(saved_tasks, 256);
+            
+            InterruptHandler::system_printPTable(saved_tasks, 256);        
             return InterruptHandler::HandleInterrupt(esp);
             break;
-        
+        case SystemCalls::SETPR:
+       
+            InterruptHandler::system_setPriorty(cpu);        
+
+            return InterruptHandler::HandleInterrupt(esp);
+            
         default:
             break;
     }

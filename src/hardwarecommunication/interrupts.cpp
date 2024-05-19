@@ -248,7 +248,11 @@ common::uint32_t InterruptHandler::system_fork(CPUState* cpustate, Saved* saved_
     return interruptManager->taskManager->fork(cpustate, saved_tasks, arraySize);
 }
 
-
+common::uint32_t InterruptHandler::system_setPriorty(CPUState* cpustate)
+{
+    
+    return interruptManager->taskManager->forkPriority(cpustate);
+}
 
 
 void InterruptHandler::system_printPTable(Saved* savedProcesses, int size)
@@ -258,7 +262,10 @@ void InterruptHandler::system_printPTable(Saved* savedProcesses, int size)
 
 }
 
-
+uint32_t InterruptHandler::syscall_getPriority()
+{
+    interruptManager->taskManager->getPriority();
+}
 
 
 

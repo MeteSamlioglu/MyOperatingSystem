@@ -23,13 +23,14 @@ namespace myos
     int exec(void ptr());
     int getPid();
     int addTask(void entrypoint());
-    void fork();
+    void setPriority(int *pid, int* priority);
     void fork(int *pid);
     void sys_exit();
     void waitpid(common::uint8_t wPid);
     int addTask(void entrypoint());
     void sysprintf(char* str);
     int getParentPid();
+    int getPriority();
     void printProcessTable();
 
 

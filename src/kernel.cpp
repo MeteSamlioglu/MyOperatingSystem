@@ -385,8 +385,7 @@ void lifeCycle1()
             printf(" is executing.");
             printf("\n");
             //printProcessTable();
-            //printf("sssss");
-            // sleep(1000);
+            //sleep(1000);
             exec(long_runnig_program); /* Execute the task and terminate */
         }
     }
@@ -442,10 +441,11 @@ void testSleepFunction()
 void multipleForks()
 {
     int childPids[3] = {0, 0, 0};
-    
+    // int priorities[3] = {0, 0, 0};
     for(int i = 0 ; i < 3; i++)
     {
         int pid = childPids[i];
+        // int priority = priorities[3];
         printf("Forked: ");
         fork(&pid);
 
@@ -466,18 +466,64 @@ void multipleForks()
             printf(" is executing.");
             printf("\n");
             // printProcessTable();
-            // sleep(1000);
             sys_exit();
         }
     }
-    //printProcessTable();
+    printf("Finished");
     sys_exit();
-    printProcessTable();
-
 }
 
+int priorities[3] = {1, 2, 3};
+int counter = 0;
+bool flag2 = false;
 
+void ThirdStrategy()
+{
+    int childPids[3] = {0, 0, 0};
+    // int priorities[3] = {1, 0, 0};
+    for(int i = 0 ; i < 3; i++)
+    {
+        int pid = childPids[i];
+        // int priority = priorities[3];
+        printf("Forked\n");
+        fork(&pid);
+        if(pid > 0)
+        {
+            counter++;
+            childPids[i] = pid;
+            // printf("Parent task is waiting for the child.\n");
+            // waitpid(childPids[i]);
+            // printf("Parent Task ");
+            // printNumber(getPid());
+            // printf(" is executing.\n");
+            // sleep(1000);
+        }
+        else
+        {
+            setPriority(&pid, &priorities[counter]);
 
+            printf("\nChild Task ");
+            printNumber(getPid());
+            printf(" with prioirty ");
+            printNumber((int)getPriority());
+            printf(" is waiting for all tasks...\n");
+            // counter++;
+            while(flag2 == false)
+            {};
+            printf(" is executing.");
+            printf("\n");
+            //counter++;
+            // printProcessTable();
+            // sys_exit();
+        }
+    
+    }
+    
+    printf("\nParent is finished...\n");
+    printProcessTable();
+    // printf("Finished");
+    sys_exit();
+}
 
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -503,9 +549,11 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     //TaskManager taskManager;
     // BinarySearch();
     TaskManager taskManager(&gdt);
-    Task task1(&gdt, lifeCycle1);
-    taskManager.AddTask(&task1);
+    //Task task1(&gdt, lifeCycle1);
+    Task task2(&gdt, ThirdStrategy);
     
+    //taskManager.AddTask(&task1);
+    taskManager.AddTask(&task2);
     //sleep(10000);s
     //Task task2(&gdt, multipleForks2);
     //taskManager.AddTask(&task2);
