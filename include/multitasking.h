@@ -93,7 +93,7 @@ namespace myos
             
             common::uint32_t AddTask(void ptr()); /* Add task by passing a function parameter*/
             common::uint32_t getTaskPid();  /* Returns the pid of the current task*/
-            
+            common::uint32_t getParentPid(); /*Returns the pid of the parennt */
             common::uint32_t fork(CPUState* cpustate, Saved* array, int arraySize);           
             common::uint32_t exec(void ptr());
             

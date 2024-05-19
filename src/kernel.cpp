@@ -110,8 +110,6 @@ void printf(char* str)
     }
 }
 
-
-
 void printNumber(int number) {
     char str[12];
     itoa(number, str, 10);
@@ -138,7 +136,6 @@ void printfHex32(uint32_t key)
     printfHex((key >> 8) & 0xFF);
     printfHex( key & 0xFF);
 }
-
 
 
 class PrintfKeyboardEventHandler : public KeyboardEventHandler
@@ -255,7 +252,7 @@ void long_runnig_program()
     printf("\n");
     
 }
-
+// int n = 7;
 void printCollatzSequence() {
 
     int n = 7;
@@ -276,9 +273,8 @@ void printCollatzSequence() {
     }
     printf("1");
     printf("\n");
+    n = n - 1;
 }
-
-
 
 // void sysprintf(char* str)
 // {
@@ -297,54 +293,13 @@ void taskB()
         sysprintf("B");
 }
 
-// void execTask()
-// {
-//     printf("The Pid of the executed task is ");
-//     printNumber(getPid());
-//     printf("\n");
-//     sys_exit();
-// }
 
+bool flag = false;
 
-void forkEx()
-{
-    int parentPid = getPid();
-    printf("Task Pid ");
-    printNumber(parentPid);
-    printf("\n");
-
-    int childPid = 0;
-    fork(&childPid);
-    if(childPid != 0)
-    {
-        printf("Parent task is waiting for the child.\n");
-        waitpid(childPid);
-        printf("Parent Task  ");
-        printNumber(parentPid);
-        printf(" is executing\n");
-    }
-    else
-    {
-        //exec(execTask); If you put to this line it will run compeletely another task, and ignore this task
-        sleep(10000);
-        //exec(execTask);
-        printf("Child Task ");
-        printNumber(getPid());
-        printf(" is executing");
-        printf("\n");
-    }
-    //exec(execTask);
-    sys_exit();
-}
-
-void multipleForks()
+void lifeCycle()
 {
     int childPids[3] = {0, 0, 0};
-    //bool flag = false;
-    // int parentPid = getPid();
-    // printf("Parent Pid");
-    // printNumber(parentPid);
-    printf("\n");
+ 
     for(int i = 0 ; i < 3; i++)
     {
         int pid = childPids[i];
@@ -353,55 +308,96 @@ void multipleForks()
 
         if(pid > 0)
         {
-            printf("Parent task is waiting for the child.\n");
-            waitpid(childPids[i]);
-            printf("Parent Task ");
+            // printf("Parent task is waiting for the child.\n");
+            // waitpid(childPids[i]);
+            childPids[i] = pid; /* Save child pids */
+            printf(" Parent with id ");
             printNumber(getPid());
-            printf(" is executing.\n");
+            printf("\n");
         }
         else
         {
             printf("Child Task ");
             printNumber(getPid());
+            printf(" is created by");
+
+            while(flag == false)   /* Childs will wait until all child processes are created and parent signal them */
+            { };
+            printf("Child Task ");
+            printNumber(getPid());
             printf(" is executing.");
             printf("\n");
-            exec(printCollatzSequence);
+            exec(printCollatzSequence); /* Execute the task and terminate */
         }
     }
-    sys_exit();
-}
-void multipleForks2()
-{
-    int childPids[3] = {0, 0, 0};
-    
-    printf("------------------------------\n");
-    for(int i = 0 ; i < 3; i++)
+    printf("Parent is waiting for all childs to terminate...\n");    
+    flag = true; /*Release all processes */
+    for(int i = 0 ; i < 3 ; i++)
     {
-        int pid = childPids[i];
-        //printf("Forked: ");
-        fork(&pid);
-
-        if(pid > 0)
-        {
-            printf("Parent task is waiting for the child.\n");
-            waitpid(childPids[i]);
-            printf("Parent Task ");
-            printNumber(getPid());
-            printf(" is executing.\n");
-        }
-        else
-        {
-            printf("Child Task ");
-            printNumber(getPid());
-            printf(" is executing.");
-            printf("\n");
-            sys_exit();
-        }
+        waitpid(childPids[i]);  /* Parent is waiting for all childs to terminate */
     }
-
-    getPid();
+    
+    printf("Parent is terminated.");
     sys_exit();
 }
+// void singleForkExample()
+// {
+//     int pid = 0;
+    
+//     fork(&pid);
+//     if(pid > 0)
+//     {
+//         waitpid(pid);
+//         printf("Parent task is waiting for the child.\n");
+//         printf("Parent ");
+//         printNumber(getPid());
+//         printf(" is executing\n");
+//         printNumber(pid);
+//     }
+//     else
+//     {
+//         //sleep(10000);
+//         printf("Child Task ");
+//         printNumber(getPid());
+//         printf(" is executing");
+//         printf("\n");
+//         exec(long_runnig_program);
+//     }   
+//     sys_exit();
+// }
+
+// void multipleForks2()
+// {
+//     int childPids[3] = {0, 0, 0};
+    
+//     printf("------------------------------\n");
+//     for(int i = 0 ; i < 3; i++)
+//     {
+//         int pid = childPids[i];
+//         //printf("Forked: ");
+//         fork(&pid);
+
+//         if(pid > 0)
+//         {
+//             printf("Parent task is waiting for the child.\n");
+//             waitpid(childPids[i]);
+//             printf("Parent Task ");
+//             printNumber(getPid());
+//             printf(" is executing.\n");
+//         }
+//         else
+//         {
+//             printf("Child Task ");
+//             printNumber(getPid());
+//             printf(" is executing.");
+//             printf("\n");
+//             sys_exit();
+//         }
+//     }
+
+//     getPid();
+//     sys_exit();
+// }
 
 
 
@@ -419,9 +415,9 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/)
 {
-    printf("Hello World! --- http://www.AlgorithMan.de\n");
+    // printf("Hello World! --- http://www.AlgorithMan.de\n");
     
-    printf("This is my operating System\n");
+    // printf("This is my operating System\n");
 
 
     GlobalDescriptorTable gdt;
@@ -430,13 +426,13 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     //TaskManager taskManager;
 
     TaskManager taskManager(&gdt);
-    Task task1(&gdt, multipleForks);
+    Task task1(&gdt, lifeCycle);
     taskManager.AddTask(&task1);
     
-    //sleep(10000);
+    //sleep(10000);s
     //Task task2(&gdt, multipleForks2);
     //taskManager.AddTask(&task2);
-    printf("Programs are loaded\n");
+    // printf("Programs are loaded\n");
     
     InterruptManager interrupts(0x20, &gdt, &taskManager);
     
@@ -543,9 +539,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // UserDatagramProtocolProvider udp(&ipv4);
     // TransmissionControlProtocolProvider tcp(&ipv4);
     
-    
     interrupts.Activate();
-
     //printf("\n\n\n\n");
     
     // arp.BroadcastMACAddress(gip_be);

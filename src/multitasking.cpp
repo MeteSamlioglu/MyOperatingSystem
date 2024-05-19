@@ -132,9 +132,9 @@ bool TaskManager::AddTask(Task* task)
   
     tasks[numTasks].task_state = READY;
     tasks[numTasks].pid=task->pid;
-    printf("New Task is added with Pid: ");
-    printNumber((int)tasks[numTasks].pid);
-    printf("\n");
+    // printf("New Task is added with Pid: ");
+    // printNumber((int)tasks[numTasks].pid);
+    // printf("\n");
     
     tasks[numTasks].cpustate = (CPUState*)(tasks[numTasks].stack + 4096 - sizeof(CPUState));
 
@@ -175,7 +175,6 @@ common::uint32_t TaskManager::exec(void ptr())
     
     ptr();
 
-    //return (uint32_t)tasks[currentTask].cpustate;
     return 1;
 }
 /* Make the flag of the task finished, so its never going to be scheduled*/
@@ -296,22 +295,29 @@ bool TaskManager::wait(common::uint32_t esp)
 {
     CPUState *cpustate=(CPUState*)esp;
     common::uint32_t pid=cpustate->ebx;
-    
+
     int check_exist = getIndex(pid);
 
     if(tasks[check_exist].task_state == FINISHED)
+    {
         return false;
-    
+    }
     if(check_exist == -1 && numTasks <= check_exist) /* Check if any task exist whose pid equals to parameter*/
+    {   
+        
         return false;
-    
-    if(tasks[currentTask].pid==pid || pid==0) //Change this, self waiting check
-        return false;
+    }
+    if(tasks[currentTask].pid == pid || pid == 0) //Change this, self waiting check
+    {  
 
+
+        return false;
+    }
     tasks[currentTask].cpustate = cpustate;
     tasks[currentTask].wait_pid = pid;
     tasks[currentTask].task_state = BLOCKED;
-    
+       
+
     return true;
 }
 
@@ -371,23 +377,7 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
     
     int counter = 0;
     int ready_states = 0;
-    // printf("Timer interrupt happened");
-    // while(counter < 256)
-    // {
-    //     if(tasks[counter].task_state==READY)
-    //     {
-    //         printf("Pid: ");
-    //         printNumber(tasks[counter].pid);
-    //         ready_states++;
-    //     }
-    //     counter++;
-    // }
-    // if(ready_states >= 1)
-    // {
-    //     printf("There are ");
-    //     printNumber(ready_states);
-    //     printf("\n");
-    // }
+
 
 
     while (tasks[findTask].task_state!=READY)

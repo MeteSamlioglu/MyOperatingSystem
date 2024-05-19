@@ -144,7 +144,6 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             esp_ = InterruptHandler::system_execute(cpu->ebx);
             
             return InterruptHandler::HandleInterrupt(esp);
-            // printf("BAY BAY");
             // return esp;
             // return esp;
             //esp_ = InterruptHandler::HandleInterrupt(esp);

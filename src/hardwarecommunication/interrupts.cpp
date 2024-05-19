@@ -10,6 +10,7 @@ void printfHex(uint8_t);
 void printNumber(int number);
 
 
+// void sleep(uint32_t milliseconds); 
 
 
 InterruptHandler::InterruptHandler(InterruptManager* interruptManager, uint8_t InterruptNumber)
