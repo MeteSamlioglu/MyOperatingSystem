@@ -183,6 +183,8 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interrupt, uint32_t esp)
     
     if(interrupt == hardwareInterruptOffset)
     {
+        // printf("Timer");
+        // sleep(1000);
         esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
     }
 

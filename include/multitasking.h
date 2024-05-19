@@ -96,6 +96,8 @@ namespace myos
             
             common::uint32_t fork(CPUState* cpustate, Saved* array, int arraySize);           
             common::uint32_t exec(void ptr());
+            
+            //void exec(void ptr());
             void setTask(Saved *task);
             
             int getCurrentTaskNumber() const;

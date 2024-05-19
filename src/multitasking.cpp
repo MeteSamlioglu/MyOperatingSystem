@@ -132,6 +132,9 @@ bool TaskManager::AddTask(Task* task)
   
     tasks[numTasks].task_state = READY;
     tasks[numTasks].pid=task->pid;
+    printf("New Task is added with Pid: ");
+    printNumber((int)tasks[numTasks].pid);
+    printf("\n");
     
     tasks[numTasks].cpustate = (CPUState*)(tasks[numTasks].stack + 4096 - sizeof(CPUState));
 
@@ -155,8 +158,10 @@ common::uint32_t TaskManager::exec(void ptr())
 {
     if(currentTask == -1)
         return -1;
-    
-    tasks[currentTask].task_state=READY;
+        //return -1;
+    // printf("Basladi");
+    ptr();
+    tasks[currentTask].task_state = FINISHED;
     tasks[currentTask].cpustate = (CPUState*)(tasks[currentTask].stack + 4096 - sizeof(CPUState));
     
     tasks[currentTask].cpustate -> eax = 0;
@@ -169,9 +174,9 @@ common::uint32_t TaskManager::exec(void ptr())
     tasks[currentTask].cpustate -> eip = (uint32_t)ptr;
     tasks[currentTask].cpustate -> cs = gdt->CodeSegmentSelector();
     tasks[currentTask].cpustate -> eflags = 0x202;
-    
-    return (uint32_t)tasks[currentTask].cpustate;
 
+    //return (uint32_t)tasks[currentTask].cpustate;
+    return 1;
 }
 /* Make the flag of the task finished, so its never going to be scheduled*/
 
@@ -207,13 +212,20 @@ common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int a
     tasks[numTasks].task_state = READY;
     tasks[numTasks].parent_pid = tasks[currentTask].pid;
     tasks[numTasks].pid = pid_counter++;
+
+    // printf("Pid Counter ");
+    // printNumber((int)tasks[numTasks].pid);
     
     saved_tasks[currentTask].pid = tasks[currentTask].pid;
-    saved_tasks[currentTask].ppid = 0; //parent pid of parent is zero
+    saved_tasks[currentTask].ppid = tasks[currentTask].pid; //parent pid of parent is zero
+
 
     saved_tasks[numTasks].pid = tasks[numTasks].pid;
     saved_tasks[numTasks].ppid = tasks[numTasks].parent_pid;
     
+    //printf("Parent pid ");
+    //printNumber(saved_tasks[numTasks].ppid);    
+    //printf("\n");
 
     for(int i = 0 ; i < sizeof(tasks[currentTask].stack); i++)
     {
@@ -233,7 +245,7 @@ common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int a
     
     tasks[numTasks].cpustate->ecx = 0; /*set child's pid to 0*/
     numTasks++;
-    
+    // return tasks[numTasks-1].task_state = BLOCKED; 
     return tasks[numTasks-1].pid; /*Return current id's process id*/
 }
 
@@ -348,6 +360,28 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
         tasks[currentTask].cpustate = cpustate;
     
     int findTask=(currentTask+1)%numTasks;
+    
+    int counter = 0;
+    int ready_states = 0;
+    // printf("Timer interrupt happened");
+    // while(counter < 256)
+    // {
+    //     if(tasks[counter].task_state==READY)
+    //     {
+    //         printf("Pid: ");
+    //         printNumber(tasks[counter].pid);
+    //         ready_states++;
+    //     }
+    //     counter++;
+    // }
+    // if(ready_states >= 1)
+    // {
+    //     printf("There are ");
+    //     printNumber(ready_states);
+    //     printf("\n");
+    // }
+
+
     while (tasks[findTask].task_state!=READY)
     {
         if(tasks[findTask].task_state==BLOCKED && tasks[findTask].wait_pid>0){
@@ -370,6 +404,7 @@ CPUState* TaskManager::Schedule(CPUState* cpustate)
         }
         findTask= (++findTask) % numTasks;
     }
+
     currentTask=findTask;
     return tasks[currentTask].cpustate;
 }

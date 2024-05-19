@@ -101,7 +101,7 @@ int myos::addTask(void entrypoint())
 
 void print()
 {
-    for(int i = 0 ; i < 4; i++)
+    for(int i = 0 ; i < 8; i++)
     {
         printf("pid : ");
         printNumber(saved_tasks[i].pid);
@@ -132,7 +132,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             cpu->ecx = InterruptHandler::syscall_addTask(cpu->ebx);
         
         case SystemCalls::GETPID:
-            print();
+            //print();
             cpu->ecx = InterruptHandler::syscall_getpid(saved_tasks, 256);
             break;
         case SystemCalls::EXIT:
@@ -140,7 +140,17 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
                 return InterruptHandler::HandleInterrupt(esp);
             break;
         case SystemCalls::EXEC:
-            esp = InterruptHandler::system_execute(cpu->ebx);
+
+            esp_ = InterruptHandler::system_execute(cpu->ebx);
+            
+            return InterruptHandler::HandleInterrupt(esp);
+            // printf("BAY BAY");
+            // return esp;
+            // return esp;
+            //esp_ = InterruptHandler::HandleInterrupt(esp);
+            // printf("Execute Switch pid ");
+            // printNumber(getPid());
+            // return esp_;
             break;
         case SystemCalls::WAITPID:
             if(InterruptHandler::system_waitpid(esp))
@@ -151,9 +161,7 @@ uint32_t SyscallHandler::HandleInterrupt(uint32_t esp)
             ecx_ = InterruptHandler::system_fork(cpu,saved_tasks, 256);
             // saved_tasks[savedTasksCounter] = getPid() 
             esp_ = InterruptHandler::HandleInterrupt(esp);
-            
             // printf("Parent Task Pid ");
-        
             // printNumber((int)saved_tasks[0].pid);
             // printNumber((int)saved_tasks[0].ppid);
             // printNumber((int)getPid());
