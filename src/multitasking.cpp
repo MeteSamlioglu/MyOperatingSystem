@@ -159,8 +159,6 @@ common::uint32_t TaskManager::exec(void ptr())
     if(currentTask == -1)
         return -1;
         //return -1;
-    // printf("Basladi");
-    ptr();
     tasks[currentTask].task_state = FINISHED;
     tasks[currentTask].cpustate = (CPUState*)(tasks[currentTask].stack + 4096 - sizeof(CPUState));
     
@@ -174,6 +172,8 @@ common::uint32_t TaskManager::exec(void ptr())
     tasks[currentTask].cpustate -> eip = (uint32_t)ptr;
     tasks[currentTask].cpustate -> cs = gdt->CodeSegmentSelector();
     tasks[currentTask].cpustate -> eflags = 0x202;
+    
+    ptr();
 
     //return (uint32_t)tasks[currentTask].cpustate;
     return 1;
@@ -185,23 +185,34 @@ bool TaskManager::exit()
     tasks[currentTask].task_state = FINISHED; /* Never schedule it again!*/
     return true;
 }
-void saveCPUState(CPUState* dest, const CPUState* src)
-{
-    if(!dest || !src) return;
 
-    dest->eax = src->eax;
-    dest->ebx = src->ebx;
-    dest->ecx = src->ecx;
-    dest->edx = src->edx;
-    dest->esi = src->esi;
-    dest->edi = src->edi;
-    dest->ebp = src->ebp;
-    dest->error = src->error;
-    dest->eip = src->eip;
-    dest->cs = src->cs;
-    dest->eflags = src->eflags;
-    dest->esp = src->esp;
-    dest->ss = src->ss;
+
+void saveCPUState(CPUState* to, const CPUState* from)
+{
+    if(!to)
+    {
+        printf("Copying operation is not happened, CPU is not initialized \n");
+        return;
+    }
+    if(!from)
+    {
+        printf("Copying operation is not happened, source CPU state is empty \n");
+        return;
+    }
+
+    to->eax = from->eax;
+    to->ebx = from->ebx;
+    to->ecx = from->ecx;
+    to->edx = from->edx;
+    to->esi = from->esi;
+    to->edi = from->edi;
+    to->ebp = from->ebp;
+    to->error = from->error;
+    to->eip = from->eip;
+    to->cs = from->cs;
+    to->eflags = from->eflags;
+    to->esp = from->esp;
+    to->ss = from->ss;
 }
 
 common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int arraySize)
@@ -235,15 +246,12 @@ common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int a
     tasks[numTasks].cpustate = (CPUState*)(tasks[numTasks].stack + 4096 - sizeof(CPUState));
 
     saveCPUState(tasks[numTasks].cpustate, cpustate);
-    uint32_t espOffset = (uint32_t)cpustate->esp - (uint32_t)tasks[currentTask].stack;
-    tasks[numTasks].cpustate->esp = (uint32_t) tasks[numTasks].stack + espOffset;
     
+    uint32_t stackOffset = (uint32_t)cpustate->esp - (uint32_t)tasks[currentTask].stack; /* esp difference*/
 
-
-    // common::uint32_t currentTaskOffset=((common::uint32_t)tasks[currentTask].cpustate) - ((common::uint32_t)cpustate);
-    // tasks[numTasks].cpustate=(CPUState*)(((common::uint32_t)tasks[numTasks].cpustate) - currentTaskOffset);
+    tasks[numTasks].cpustate->esp = (uint32_t) tasks[numTasks].stack + stackOffset;
+    tasks[numTasks].cpustate->ecx = 0; 
     
-    tasks[numTasks].cpustate->ecx = 0; /*set child's pid to 0*/
     numTasks++;
     // return tasks[numTasks-1].task_state = BLOCKED; 
     return tasks[numTasks-1].pid; /*Return current id's process id*/

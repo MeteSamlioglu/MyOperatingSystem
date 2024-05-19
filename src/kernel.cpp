@@ -34,7 +34,8 @@ using namespace myos::gui;
 using namespace myos::net;
 
 
-void sleep(uint32_t milliseconds) {
+void sleep(uint32_t milliseconds) 
+{
     for (uint32_t i = 0; i < milliseconds; i++) {
         for (uint32_t j = 0; j < 400000; j++) {
             asm volatile("nop");
@@ -43,8 +44,11 @@ void sleep(uint32_t milliseconds) {
 }
 
 char* itoa(int value, char* result, int base) {
-    // check that the base if valid
-    if (base < 2 || base > 36) { *result = '\0'; return result; }
+    // Check that the base is valid
+    if (base < 2 || base > 36) {
+        *result = '\0';
+        return result;
+    }
 
     char* ptr = result, *ptr1 = result, tmp_char;
     int tmp_value;
@@ -52,20 +56,21 @@ char* itoa(int value, char* result, int base) {
     do {
         tmp_value = value;
         value /= base;
-        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz" [35 + (tmp_value - value * base)];
-    } while ( value );
+        *ptr++ = "0123456789abcdefghijklmnopqrstuvwxyz"[tmp_value - value * base];
+    } while (value);
 
-
+    // Apply negative sign
     if (tmp_value < 0) *ptr++ = '-';
     *ptr-- = '\0';
-    while(ptr1 < ptr) {
+
+    // Reverse the string
+    while (ptr1 < ptr) {
         tmp_char = *ptr;
-        *ptr--= *ptr1;
+        *ptr-- = *ptr1;
         *ptr1++ = tmp_char;
     }
     return result;
 }
-
 
 
 void printf(char* str)
@@ -106,11 +111,10 @@ void printf(char* str)
 }
 
 
-void printNumber(int number){
-    char str[12];
 
-    itoa(number,str,12);
-    
+void printNumber(int number) {
+    char str[12];
+    itoa(number, str, 10);
     printf(str);
 }
 
@@ -252,6 +256,30 @@ void long_runnig_program()
     
 }
 
+void printCollatzSequence() {
+
+    int n = 7;
+    printNumber(n);
+    printf(" : ");
+    while (n != 1) 
+    {
+
+        printNumber((int)n);
+        printf(", ");
+        if (n % 2 == 0) 
+        {
+            n = n / 2;
+        } else 
+        {
+            n = 3 * n + 1;
+        }
+    }
+    printf("1");
+    printf("\n");
+}
+
+
+
 // void sysprintf(char* str)
 // {
 //     asm("int $0x80" : : "a" (4), "b" (str));
@@ -320,7 +348,7 @@ void multipleForks()
     for(int i = 0 ; i < 3; i++)
     {
         int pid = childPids[i];
-        //printf("Forked\n");
+        printf("Forked\n");
         fork(&pid);
 
         if(pid > 0)
@@ -330,7 +358,6 @@ void multipleForks()
             printf("Parent Task ");
             printNumber(getPid());
             printf(" is executing.\n");
-
         }
         else
         {
@@ -338,13 +365,9 @@ void multipleForks()
             printNumber(getPid());
             printf(" is executing.");
             printf("\n");
-            exec(long_runnig_program);
+            exec(printCollatzSequence);
         }
     }
-    // exec(long_runnig_program);
-    // printNumber(getPid());
-    // printf("Ciktim \n");
-    // getPid();
     sys_exit();
 }
 void multipleForks2()
