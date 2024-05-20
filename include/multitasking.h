@@ -55,8 +55,8 @@ namespace myos
         common::uint32_t pid = 0; /*pid of the current process*/
         common::uint32_t parent_pid = 0; /*pid of the parent process*/
         common::uint32_t wait_pid = 0; 
-        common::uint32_t priority = 0; /*priority of each task*/
-
+        common::uint32_t priority = 3; /*Initial Priority of each task*/
+        common::uint32_t scheduling_priority = 3;
         State task_state; /*Stores the state of the current task*/
         // static common::uint32_t pid_counter;
 
@@ -104,6 +104,8 @@ namespace myos
             void setTask(Saved *task);
             int getCurrentTaskNumber() const;
             int getProcess(common::uint32_t ProcessId);
+            bool isRoundRobinBasedPriority( ) const; /* Checks if round robin is prioriy based or timer based*/
+            void updateAllPriorities(int index); /* Updates each whenever a context switch occurs */
     };
 
     class TaskRecovery

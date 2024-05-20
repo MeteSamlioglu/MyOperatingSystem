@@ -258,13 +258,18 @@ common::uint32_t TaskManager::fork(CPUState* cpustate, Saved* saved_tasks, int a
     return tasks[numTasks-1].pid; /*Return current id's process id*/
 }
 
+/*
+    Sets the actual priority of the task
+    
+    tasks[currentTask].priority : Priorty is a constant which will not change and show process's priority
+    tasks[currentTask].scheduling_priority : A priority value which will be updated in each context switch
+
+*/
 common::uint32_t TaskManager::forkPriority(CPUState* cpustate)
 {    
-    // printf(" (Priority) ");
     tasks[currentTask].priority = cpustate->ebx;
-    
-    // printNumber((int) tasks[currentTask].priority);
-    // printf(" ");
+    tasks[currentTask].scheduling_priority = cpustate->ebx;
+ 
 }
 
 
@@ -378,91 +383,175 @@ void TaskManager::printProcessTable(Saved* savedTasks, int size)
     sleep(10000);
 
 }
+/***
+ *  Checks if the all the priorities are the same or not
+ * 
+ *  Returns: True if all the priorities are the same
+ * 
+ * */
+bool TaskManager::isRoundRobinBasedPriority( ) const
+{
+    // if(numTasks == 1)
+    //     return true;
 
+    int firstElement = tasks[0].scheduling_priority;
+    for (int i = 1; i < numTasks; ++i) 
+    {
+        if (tasks[i].scheduling_priority != firstElement) 
+        {
 
+            return false;
+        }
+    }
+    return true;
+}
+void TaskManager::updateAllPriorities(int index)
+{
+ 
+    for(int i = 0; i < numTasks; i++)
+    {
+        if(i != index)
+        {
+            if(tasks[i].scheduling_priority == 1 && tasks[i].scheduling_priority == 0)
+            {
+                tasks[i].scheduling_priority = tasks[i].priority; /* Store its actual priority */
+            }
+            else
+            {
+                tasks[i].scheduling_priority = tasks[i].scheduling_priority - 1;
+            }
+        }
+        else
+        {
+            if(tasks[i].scheduling_priority == 1 && tasks[i].scheduling_priority == 0)
+            {
+                tasks[i].scheduling_priority = tasks[i].priority; /* Store its actual priority */
+            } 
+        }
+    }
+}
+CPUState* TaskManager::Schedule(CPUState* cpustate)
+{
+ 
+    if(currentTask > 0 || currentTask == 0) /* Current Task must be greater than 0*/
+        tasks[currentTask].cpustate = cpustate;
+    
+    if(numTasks < 0 || numTasks == 0) /* numTask can not be negative */
+        return cpustate;
+    
+    int blockedProcessIndex = 0;
+    int counter = 0;
+    int ready_states = 0;
+    int index = (currentTask + 1) % numTasks;
+    bool isPriorityBased = isRoundRobinBasedPriority();
+
+    if(tasks[index].task_state == READY)
+    {
+        currentTask = index;
+        return tasks[currentTask].cpustate; /* Return the current task's cpustate to the assembly*/
+    }
+    else
+    {
+        while (tasks[index].task_state!=READY)
+        {
+            if(tasks[index].task_state==BLOCKED && tasks[index].wait_pid>0){
+
+                blockedProcessIndex = 0;
+                
+                blockedProcessIndex = getProcess(tasks[index].wait_pid);
+                
+                if(blockedProcessIndex > -1 && tasks[blockedProcessIndex].task_state!=BLOCKED){
+                    if (tasks[blockedProcessIndex].task_state==FINISHED)
+                    {
+                        tasks[index].wait_pid=0;
+                        tasks[index].task_state=READY;
+                    }
+                    else if (tasks[blockedProcessIndex].task_state==READY)
+                    {
+                        index = blockedProcessIndex;
+                    }
+                    
+                }
+            }
+            index= (++index) % numTasks;
+        }
+        currentTask = index;
+        return tasks[currentTask].cpustate; /* Return the current task's cpustate to the assembly*/
+    }
+}
 // CPUState* TaskManager::Schedule(CPUState* cpustate)
 // {
 //     if(numTasks <= 0)
 //         return cpustate;
+    
 //     if(currentTask >= 0)
-//         tasks[currentTask].cpustate = cpustate;
-    
-//     int findTask=(currentTask+1)%numTasks;
-    
-//     int counter = 0;
-
-//     int ready_states = 0;
-
-//     while (tasks[findTask].task_state!=READY)
 //     {
-//         if(tasks[findTask].task_state==BLOCKED && tasks[findTask].wait_pid>0){
+//         tasks[currentTask].cpustate = cpustate;
+//     }    
+//     int minPriority;
+//     int minPriorityIndex;
+//     bool isPriorityBased = false;
+//     int index = (currentTask + 1) % numTasks; /* Iterate in the tasks*/
 
-//             int waitTaskIndex=0;
-//             waitTaskIndex=getProcess(tasks[findTask].wait_pid);
-//             if(waitTaskIndex>-1 && tasks[waitTaskIndex].task_state!=BLOCKED){
-//                 if (tasks[waitTaskIndex].task_state==FINISHED)
+//     if(isPriorityBased == false && numTasks > 3) /* Find the task with highest priority*/
+//     {
+//         minPriority = 100;
+//         minPriorityIndex = -1;
+        
+//         for(int i = 0; i < numTasks; i++)
+//         {
+//             if(tasks[i].scheduling_priority < minPriority)
+//             {
+//                 minPriority = tasks[i].scheduling_priority;
+//                 minPriorityIndex = i;
+//             }
+//         }
+//         // index = minPriorityIndex;
+//         // printf("MaxPriorityIndex and Priority\n");
+//         if(minPriorityIndex != -1 && minPriority != 0)
+//             index = minPriorityIndex;
+        
+//         // printf("Choosen Index ");
+//         // printNumber(index);
+//         // printNumber(minPriority);
+//         // printf(" ");
+//         //printNumber(numTasks);
+//         // updateAllPriorities(index); /* Decrease all the priorities */
+//         // index = minPriorityIndex;
+//     }
+//     // // printf("\n");
+//     while (tasks[index].task_state!=READY) //if its not ready it can be blocked ???
+//     {
+        
+//         if(tasks[index].task_state==BLOCKED && tasks[index].wait_pid > 0) /*If the current task is parent*/
+//         {
+
+//             int blockedTask = 0;
+//             blockedTask = getProcess(tasks[index].wait_pid); /* We got the parent task which is blocked */
+            
+//             /* Check the task which blocks this tasks */
+//             if( blockedTask > -1 && tasks[blockedTask].task_state!=BLOCKED)
+//             {
+//                 if (tasks[blockedTask].task_state == FINISHED)
 //                 {
-//                     tasks[findTask].wait_pid=0;
-//                     tasks[findTask].task_state=READY;
-//                     continue;
-//                 }else if (tasks[waitTaskIndex].task_state==READY)
-//                 {
-//                     findTask=waitTaskIndex;
+//                     tasks[index].wait_pid=0;
+//                     tasks[index].task_state=READY;
 //                     continue;
 //                 }
                 
+//                 else if (tasks[blockedTask].task_state == READY)
+//                 {
+//                     index = blockedTask;
+//                     continue;
+//                 }
 //             }
 //         }
-//         findTask= (++findTask) % numTasks;
+//         index= (++index) % numTasks;
 //     }
-
-//     currentTask=findTask;
+//     updateAllPriorities(index);
+//     currentTask=index;
 //     return tasks[currentTask].cpustate;
 // }
-CPUState* TaskManager::Schedule(CPUState* cpustate)
-{
-    if(numTasks <= 0)
-        return cpustate;
-    
-    if(currentTask >= 0)
-    {
-        tasks[currentTask].cpustate = cpustate;
-    }    
-    
-    int findTask=(currentTask+1)%numTasks;
-    
-    int counter = 0;
-    int ready_states = 0;
-
-    while (tasks[findTask].task_state!=READY)
-    {
-        if(tasks[findTask].task_state==BLOCKED && tasks[findTask].wait_pid>0) /*If the current task is parent*/
-        {
-
-            int waitTaskIndex=0;
-            
-            waitTaskIndex = getProcess(tasks[findTask].wait_pid);
-            
-            if(waitTaskIndex>-1 && tasks[waitTaskIndex].task_state!=BLOCKED){
-                if (tasks[waitTaskIndex].task_state==FINISHED)
-                {
-                    tasks[findTask].wait_pid=0;
-                    tasks[findTask].task_state=READY;
-                    continue;
-                }else if (tasks[waitTaskIndex].task_state==READY)
-                {
-                    findTask=waitTaskIndex;
-                    continue;
-                }
-                
-            }
-        }
-        findTask= (++findTask) % numTasks;
-    }
-
-    currentTask=findTask;
-    return tasks[currentTask].cpustate;
-}
 
 
 

@@ -30,9 +30,9 @@ Saved saved_tasks[256];
 void printf(char*);
 void printNumber(int number);
 
-void myos::waitpid(common::uint8_t wPid)
+void myos::waitpid(common::uint8_t waitPid)
 {
-    asm("int $0x80" : : "a" (SystemCalls::WAITPID),"b" (wPid));
+    asm("int $0x80" : : "a" (SystemCalls::WAITPID), "b" (waitPid));
 }
 
 int myos::getParentPid()
@@ -56,7 +56,6 @@ void myos::sysprintf(char* str)
 {
     asm("int $0x80" : : "a" (SystemCalls::PRINTF), "b" (str));
 }
-
 
 void myos::printProcessTable()
 {

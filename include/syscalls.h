@@ -26,7 +26,7 @@ namespace myos
     void setPriority(int *pid, int* priority);
     void fork(int *pid);
     void sys_exit();
-    void waitpid(common::uint8_t wPid);
+    void waitpid(common::uint8_t waitPid);
     int addTask(void entrypoint());
     void sysprintf(char* str);
     int getParentPid();

@@ -398,7 +398,7 @@ void lifeCycle1()
     {
         waitpid(childPids[i]);  /* Parent is waiting for all childs to terminate */
     }
-    sleep(10000);
+    // sleep(10000);
     printf("\n\n\n\n\n\n\n\n");
     printProcessTable();
     // sleep(1000);
@@ -408,7 +408,7 @@ void lifeCycle1()
 void testSleepFunction()
 {
     printf("Testing Sleep");
-    sleep(1000);
+    // sleep(1000);
     printf("Terminating");
 
 }
@@ -473,8 +473,8 @@ void multipleForks()
     sys_exit();
 }
 
-int priorities[3] = {1, 2, 3};
-int counter = 0;
+int priorities[3] = {5, 3, 4};
+int counter = 0; 
 bool flag2 = false;
 
 void ThirdStrategy()
@@ -489,7 +489,8 @@ void ThirdStrategy()
         fork(&pid);
         if(pid > 0)
         {
-            counter++;
+            // waitpid(i);
+            //counter++;
             childPids[i] = pid;
             // printf("Parent task is waiting for the child.\n");
             // waitpid(childPids[i]);
@@ -500,18 +501,22 @@ void ThirdStrategy()
         }
         else
         {
-            setPriority(&pid, &priorities[counter]);
 
+            setPriority(&pid, &priorities[counter]);
+            // printProcessTable();
             printf("\nChild Task ");
             printNumber(getPid());
             printf(" with prioirty ");
             printNumber((int)getPriority());
             printf(" is waiting for all tasks...\n");
-            // counter++;
+            counter++;
             while(flag2 == false)
             {};
+            printf("Child ");
+            printNumber(getPid());
             printf(" is executing.");
             printf("\n");
+            exec(long_runnig_program);
             //counter++;
             // printProcessTable();
             // sys_exit();
@@ -520,8 +525,14 @@ void ThirdStrategy()
     }
     
     printf("\nParent is finished...\n");
-    printProcessTable();
-    // printf("Finished");
+    
+    flag2 = true; /*Release all processes */
+    for(int i = 0 ; i < 3 ; i++)
+    {
+        waitpid(childPids[i]);  /* Parent is waiting for all childs to terminate */
+    }
+    // printProcessTable();
+    printf("Finished");
     sys_exit();
 }
 
@@ -550,7 +561,7 @@ extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot
     // BinarySearch();
     TaskManager taskManager(&gdt);
     //Task task1(&gdt, lifeCycle1);
-    Task task2(&gdt, ThirdStrategy);
+    Task task2(&gdt, lifeCycle1);
     
     //taskManager.AddTask(&task1);
     taskManager.AddTask(&task2);
